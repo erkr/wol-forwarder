@@ -1,0 +1,32 @@
+{
+  "name": "WOL Forwarder",
+  "version": "0.1.0",
+  "slug": "wol-forwarder",
+  "description": "Forward Wake-on-LAN (WOL) requests and send magic packets on your LAN.",
+  "arch": ["amd64","armv7","arm64"],
+  "startup": "services",
+  "boot": "auto",
+  "host_network": true,
+  "homeassistant": "false",
+  "options": {
+    "wol_port": 9,
+    "http_port": 8090,
+    "log_to_file": false,
+    "log_file": "/config/wol-forwarder.log",
+    "allowed_ips": []
+  },
+  "schema": {
+    "wol_port": "int",
+    "http_port": "int",
+    "log_to_file": "bool",
+    "log_file": "str",
+    "allowed_ips": ["str"]
+  },
+  "ports": {},
+  "map": [
+    "config:rw"
+  ],
+  "options_description": "wol_port: UDP port to send magic packets to (usually 9). http_port: port for the HTTP API (add-on uses host network). log_to_file: when true, logs are written to log_file in your config folder. allowed_ips: optional list of client IPs allowed to call the HTTP API (empty = allow all).",
+  "webui": "http://[HOST]:8090/",
+  "author": "erkr"
+}
