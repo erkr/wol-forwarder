@@ -79,7 +79,7 @@ class WoLPacketListener:
         try:
             while self.running:
                 try:
-                    data, addr = self.socket.recvfrom(self.listen_port)
+                    data, addr = self.socket.recvfrom(1024)
                     self.process_packet(data, addr)
                 except socket.timeout:
                     continue
