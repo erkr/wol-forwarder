@@ -7,7 +7,7 @@ Reads options from /data/options.json when available (Supervisor).
 import os
 import logging
 import threading
-from typing import List
+from typing import List, Optional
 from wol_packet_listener import WoLPacketListener
 from http_api import create_api_server
 
@@ -31,9 +31,15 @@ API_PORT = int(os.environ.get('API_PORT', 5000))
 # parse allowed hosts into list
 allowed_hosts_list: List[str] = [h for h in ALLOWED_HOSTS.split(',') if h]
 
+# Global references for cleanup
+api_thread: Optional[threading.Thread] = None
+api_app = None
+
 
 def main():
     """Run the WoL packet listener."""
+    global api_thread, api_app
+    
     # Convert hex password string to bytes if provided
     secure_on_password = None
     try:
@@ -74,6 +80,13 @@ def main():
         pass
     finally:
         listener.stop()
+        # Gracefully shutdown API if it was started
+        if api_app is not None:
+            logger.info("Shutting down HTTP API server")
+            # The daemon flag ensures the thread exits when main thread exits
+            # Add a small wait for graceful shutdown
+            if api_thread is not None and api_thread.is_alive():
+                api_thread.join(timeout=2)
 
 
 if __name__ == "__main__":
