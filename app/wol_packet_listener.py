@@ -53,6 +53,12 @@ class WoLPacketListener:
         self._dns_cache: Dict[str, Dict] = {}
         self._retry_interval = 30  # seconds: how often to retry failed/no-result hosts
 
+        # Packet statistics (thread-safe counters)
+        self.packets_received = 0
+        self.packets_accepted = 0
+        self.packets_rejected = 0
+        self.packets_forwarded = 0
+
     def start(self) -> None:
         """Start the listener (blocking until stop() is called)."""
         try:
@@ -90,6 +96,7 @@ class WoLPacketListener:
             while self.running:
                 try:
                     data, addr = self.socket.recvfrom(1024)
+                    self.packets_received += 1
                     self.process_packet(data, addr)
                 except socket.timeout:
                     continue
@@ -115,17 +122,20 @@ class WoLPacketListener:
         
         # Check source against allowed_hosts (if configured)
         if not self._is_source_allowed(source_ip):
-            logger.info("WoL packet with valid SecureOn password received from %s:%d", source_ip, source_port)
+            logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
+            self.packets_rejected += 1
             return
         
         # Verify the packet
         result = self.verify_magic_packet(packet_data)
         if not result.get("valid", False):
             logger.warning("Invalid WOL packet from %s:%d - %s", source_ip, source_port, result.get("error"))
+            self.packets_rejected += 1
             return
                 
         # Log successful packet
-        logger.info( f"WoL packet with valid SecureOn password received from {source_ip}:{source_port}" )       
+        self.packets_accepted += 1
+        logger.info("WoL packet with valid SecureOn password received from %s:%d", source_ip, source_port)
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     
@@ -135,6 +145,7 @@ class WoLPacketListener:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             sock.sendto(magic_packet, (self.broadcast_ip, self.wol_port))
+            self.packets_forwarded += 1
             logger.debug("Sent magic packet (%d bytes) to %s:%d", len(magic_packet), self.broadcast_ip, self.wol_port)
         except Exception:
             logger.exception("Failed to send magic packet to %s:%d", self.broadcast_ip, self.wol_port)
@@ -209,6 +220,32 @@ class WoLPacketListener:
         # No match
         logger.info("Source %s is not in allowed hosts (%s)", source_ip, self.allowed_hosts)
         return False
+
+    def get_status(self) -> Dict:
+        """Return current listener status and statistics."""
+        return {
+            'running': self.running,
+            'listen_address': self.listen_address,
+            'listen_port': self.listen_port,
+            'wol_port': self.wol_port,
+            'broadcast_ip': self.broadcast_ip,
+            'packets': {
+                'received': self.packets_received,
+                'accepted': self.packets_accepted,
+                'rejected': self.packets_rejected,
+                'forwarded': self.packets_forwarded,
+            },
+            'allowed_hosts': self.allowed_hosts,
+            'dns_cache': {
+                host: {
+                    'ips': sorted(list(entry.get('ips', set()))),
+                    'resolved': bool(entry.get('ips')),
+                    'last_success': entry.get('last_success', 0),
+                    'last_attempt': entry.get('last_attempt', 0),
+                }
+                for host, entry in self._dns_cache.items()
+            },
+        }
 
     def verify_magic_packet(self, packet_data: bytes) -> Dict:
         """
