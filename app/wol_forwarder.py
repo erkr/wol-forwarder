@@ -65,20 +65,6 @@ def main():
 
 
 
-##################
-
-# def run():
-    # server = HTTPServer(('0.0.0.0', LISTEN_PORT), Handler)
-    # logger.info(f"Starting WOL forwarder HTTP server on 0.0.0.0:{LISTEN_PORT}, target WOL port {WOL_PORT}")
-    # try:
-        # server.serve_forever()
-    # except KeyboardInterrupt:
-        # pass
-    # finally:
-        # server.server_close()
-
-
-
 if __name__ == "__main__":
     main()
-   # run()
+
