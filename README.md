@@ -22,6 +22,8 @@ Usage
    - `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
    - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
    - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
+   - `allowed_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses (backwards compatible: leave empty to allow all sources).
+   - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution for that host to avoid transient DNS outages.
 
 Example options.json
 ```json
@@ -29,7 +31,9 @@ Example options.json
   "wol_port": 9,
   "listen_port": 58090,
   "secure_on": "aabbccddeeff",
-  "broadcast_ip": "255.255.255.255"
+  "broadcast_ip": "255.255.255.255",
+  "allowed_hosts": ["sender.example.com"],
+  "dns_ttl": 300
 }
 ```
 
@@ -39,8 +43,12 @@ Notes
 - Ensure the target device's NIC supports Wake-on-LAN and that WOL is enabled in firmware/BIOS.
 
 Testing
-- You can test locally by running a WOL sender that supports SecureOn and pointing it to your router's public IP and the forwarded external UDP port.
-- Check the add-on logs in Supervisor for messages indicating a valid SecureOn packet was received and broadcast.
+- Local test: set `allowed_hosts` to `["localhost"]` in options and run the add-on on the host; sending a SecureOn WOL packet from 127.0.0.1 should be accepted.
+- Fallback behavior: if a host resolved successfully in the past but a later DNS refresh fails, the add-on keeps the previous IPs and continues allowing those sources until the next successful refresh (or until the admin changes configuration).
+- Logs:
+  - Successful resolution: debug "Resolved <host> -> {ips}"
+  - Failed refresh but keeping previous IPs: warning with details
+  - Rejected packet because not allowed: warning "Dropping packet from ... — source not allowed"
 
 Author
 - erkr
