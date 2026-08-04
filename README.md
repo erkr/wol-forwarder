@@ -1,41 +1,33 @@
 # WOL Forwarder Home Assistant Add-on
 
-This add-on provides a small HTTP API to send Wake-on-LAN magic packets on your LAN.
-It is intended to run with host networking so the broadcast packets reach your network.
+This add-on provides a small deamon to forward Wake-on-LAN magic packets on your LAN. 
 
-Features
-- POST /wake to send a magic packet for a given MAC address
-- Optional IP allowlist
-- Optional log-to-file under your Home Assistant config folder
+The use case to be solved in more detail:
+- enable WOL remotely from the internet is a 'secure' way. 
+- many routers deliberately don't support forwarding broadcasts, only to a specific IP/port on the LAN.
+- broadcasts can be used as a DDOS attac, So opening the known WOL port 7 or 9 is not great either
+- When forwarding. it is not nice if that can be done unsolicited
 
+ What WOL forwarder offers:
+  - The router forwards UDP's from any undefiend port (typically above 50000) to this WOL forwarder deamon
+  - The deamon will check if the incomming UDP packet to be a valid WOL packet with a matching password (SecureON)
+  - Only valid packets are broadcasted on port 9 in hte local network (without the SecureOn)
+There are numerous WOL apps that can send magical packets with a SecureOn password. Also the Home assistant WOL integration can do that.
+ 
 Usage
 1. Install this add-on (from this repository branch) in Home Assistant Supervisor.
 2. Configure options in the Supervisor add-on UI:
    - wol_port: UDP port to send magic packets to (default 9)
-   - http_port: Port for the HTTP API (default 8090). Note: add-on uses host network.
-   - log_to_file: true/false
-   - log_file: path to log file (e.g. /config/wol-forwarder.log)
-   - allowed_ips: optional list of IP addresses allowed to call the API
+   - listen_port: Port for receiving UDP's forwarded by your router (default 58090)
+   - secore_on: a string of exactly 6 hex values (12 bytes, default "aabbccddeeff")
 
-HTTP API
-- POST /wake
-  Body (JSON): {"mac": "AA:BB:CC:DD:EE:FF", "ip": "255.255.255.255", "port": 9}
-  ip and port are optional. ip defaults to 255.255.255.255.
-
-- GET /ping
-  Returns 200 OK with {"status": "ok"}
 
 Example options.json
 {
   "wol_port": 9,
-  "http_port": 8090,
-  "log_to_file": false,
-  "log_file": "/config/wol-forwarder.log",
-  "allowed_ips": ["192.168.1.100"]
+  "listen_port": 58090,
+  "secure_on": "aabbccddeeff"
 }
 
-Security
-- The HTTP endpoint is unauthenticated by default. Use the allowed_ips option, a reverse proxy, or Home Assistant automation protections to limit access.
-
 Notes
-- Host network mode is recommended so broadcast packets reach the LAN.
+- Host network mode is needed, so broadcast packets reach the LAN.
