@@ -1,6 +1,6 @@
 {
   "name": "WOL Forwarder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "slug": "wol-forwarder",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["amd64","armv7","arm64"],
@@ -14,7 +14,9 @@
     "secure_on": "aabbccddeeff",
     "broadcast_ip": "255.255.255.255",
     "allowed_hosts": [],
-    "dns_ttl": 300
+    "dns_ttl": 300,
+    "http_api_enabled": false,
+    "api_port": 5000
   },
   "schema": {
     "wol_port": "int",
@@ -22,12 +24,19 @@
     "secure_on": "str",
     "broadcast_ip": "str",
     "allowed_hosts": "list",
-    "dns_ttl": "int"
+    "dns_ttl": "int",
+    "http_api_enabled": "bool",
+    "api_port": "int"
   },
-  "ports": {},
+  "ports": {
+    "5000/tcp": 5000
+  },
+  "ports_description": {
+    "5000/tcp": "HTTP API status endpoint (only when http_api_enabled is true)"
+  },
   "map": [
     "config:rw"
   ],
-  "options_description": "listen_port: UDP port to send magic packets with secureOn to (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_hosts: optional list of hostnames; when set, only packets from the resolved IPs are allowed.",
+  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_hosts: optional list of hostnames; when set, only packets from the resolved IPs are allowed. dns_ttl: DNS cache TTL in seconds. http_api_enabled: enable HTTP API for monitoring. api_port: HTTP API port.",
   "author": "erkr"
 }
