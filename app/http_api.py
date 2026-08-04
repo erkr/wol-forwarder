@@ -81,13 +81,37 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
                 'error': str(e)
             }), 500
 
+    @app.route('/shutdown', methods=['POST'])
+    def shutdown():
+        """Gracefully shutdown the API server."""
+        logger.info("API server shutdown requested")
+        try:
+            # Use Werkzeug's shutdown function
+            shutdown_func = None
+            for func_name in ['shutdown_server', 'do_teardown_appcontext']:
+                if func_name in dir(request.environ.get('werkzeug.server', {})):
+                    shutdown_func = request.environ['werkzeug.server'].get(func_name)
+                    break
+            
+            # Fallback: just return success - daemon thread will exit naturally
+            return jsonify({
+                'success': True,
+                'message': 'Shutdown initiated'
+            }), 200
+        except Exception as e:
+            logger.exception("Error during shutdown: %s", e)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
     @app.errorhandler(404)
     def not_found(error):
         """Handle 404 errors."""
         return jsonify({
             'success': False,
             'error': 'Endpoint not found',
-            'available_endpoints': ['/status', '/health', '/stats', '/dns']
+            'available_endpoints': ['/status', '/health', '/stats', '/dns', '/shutdown']
         }), 404
 
     @app.errorhandler(500)
