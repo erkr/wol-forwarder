@@ -1,0 +1,29 @@
+{
+  "name": "WOL Forwarder",
+  "version": "0.1.0",
+  "slug": "wol-forwarder",
+  "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
+  "arch": ["amd64","armv7","arm64"],
+  "startup": "services",
+  "boot": "auto",
+  "host_network": true,
+  "homeassistant": "false",
+  "options": {
+    "wol_port": 9,
+    "listen_port": 58090,
+		"secure_on": "aabbccddeeff",
+    "allowed_ips": []
+  },
+  "schema": {
+    "wol_port": "int",
+    "listen_port": "int",
+    "secure_on": ["str"],
+    "allowed_ips": ["str"]
+  },
+  "ports": {},
+  "map": [
+    "config:rw"
+  ],
+  "options_description": "listen_port: UDP port to send magic packets with secureOn to (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_ips: optional list of client IPs allowed to call the HTTP API (empty = allow all).",
+  "author": "erkr"
+}
