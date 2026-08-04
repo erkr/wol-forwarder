@@ -115,7 +115,7 @@ class WoLPacketListener:
         
         # Check source against allowed_hosts (if configured)
         if not self._is_source_allowed(source_ip):
-            logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
+            logger.info("WoL packet with valid SecureOn password received from %s:%d", source_ip, source_port)
             return
         
         # Verify the packet
