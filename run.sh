@@ -6,16 +6,16 @@ set -e
 OPTIONS_FILE="/data/options.json"
 if [ -f "$OPTIONS_FILE" ]; then
   WOL_PORT=$(jq -r '.wol_port // 9' $OPTIONS_FILE)
-  HTTP_PORT=$(jq -r '.http_port // 8090' $OPTIONS_FILE)
-  LOG_TO_FILE=$(jq -r '.log_to_file // false' $OPTIONS_FILE)
-  LOG_FILE=$(jq -r '.log_file // "/config/wol-forwarder.log"' $OPTIONS_FILE)
+	BROADCAST_IP=$(jq -r '.broadcast_ip // "255.255.255.255"' $OPTIONS_FILE)
+  LISTEN_PORT=$(jq -r '.listen_port // 58090' $OPTIONS_FILE)
+  SECURE_ON=$(jq -r '.secure_on // "aabbccddeeff"' $OPTIONS_FILE)
 else
   WOL_PORT=9
-  HTTP_PORT=8090
-  LOG_TO_FILE=false
-  LOG_FILE="/config/wol-forwarder.log"
+  LISTEN_PORT=58090
+  SECURE_ON="aabbccddeeff"
+	BROADCAST_IP="255.255.255.255"
 fi
 
-export WOL_PORT HTTP_PORT LOG_TO_FILE LOG_FILE
+export WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON
 
 exec python3 /usr/src/app/app/wol_forwarder.py

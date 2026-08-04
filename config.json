@@ -2,7 +2,7 @@
   "name": "WOL Forwarder",
   "version": "0.1.0",
   "slug": "wol-forwarder",
-  "description": "Forward Wake-on-LAN (WOL) requests and send magic packets on your LAN.",
+  "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["amd64","armv7","arm64"],
   "startup": "services",
   "boot": "auto",
@@ -10,23 +10,20 @@
   "homeassistant": "false",
   "options": {
     "wol_port": 9,
-    "http_port": 8090,
-    "log_to_file": false,
-    "log_file": "/config/wol-forwarder.log",
+    "listen_port": 58090,
+		"secure_on": "aabbccddeeff",
     "allowed_ips": []
   },
   "schema": {
     "wol_port": "int",
-    "http_port": "int",
-    "log_to_file": "bool",
-    "log_file": "str",
+    "listen_port": "int",
+    "secure_on": ["str"],
     "allowed_ips": ["str"]
   },
   "ports": {},
   "map": [
     "config:rw"
   ],
-  "options_description": "wol_port: UDP port to send magic packets to (usually 9). http_port: port for the HTTP API (add-on uses host network). log_to_file: when true, logs are written to log_file in your config folder. allowed_ips: optional list of client IPs allowed to call the HTTP API (empty = allow all).",
-  "webui": "http://[HOST]:8090/",
+  "options_description": "listen_port: UDP port to send magic packets with secureOn to (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_ips: optional list of client IPs allowed to call the HTTP API (empty = allow all).",
   "author": "erkr"
 }
