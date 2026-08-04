@@ -11,19 +11,23 @@
   "options": {
     "wol_port": 9,
     "listen_port": 58090,
-		"secure_on": "aabbccddeeff",
-		"broadcast_ip": "255.255.255.255"
+    "secure_on": "aabbccddeeff",
+    "broadcast_ip": "255.255.255.255",
+    "allowed_hosts": [],
+    "dns_ttl": 300
   },
   "schema": {
     "wol_port": "int",
     "listen_port": "int",
     "secure_on": "str",
-		"broadcast_ip": "str"
+    "broadcast_ip": "str",
+    "allowed_hosts": "list",
+    "dns_ttl": "int"
   },
   "ports": {},
   "map": [
     "config:rw"
   ],
-  "options_description": "listen_port: UDP port to send magic packets with secureOn to (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_ips: optional list of client IPs allowed to call the HTTP API (empty = allow all).",
+  "options_description": "listen_port: UDP port to send magic packets with secureOn to (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_hosts: optional list of hostnames; when set, only packets from the resolved IPs are allowed.",
   "author": "erkr"
 }
