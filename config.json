@@ -7,18 +7,18 @@
   "startup": "services",
   "boot": "auto",
   "host_network": true,
-  "homeassistant": "false",
+  "homeassistant": false,
   "options": {
     "wol_port": 9,
     "listen_port": 58090,
 		"secure_on": "aabbccddeeff",
-    "allowed_ips": []
+		"broadcast_ip": "255.255.255.255"
   },
   "schema": {
     "wol_port": "int",
     "listen_port": "int",
-    "secure_on": ["str"],
-    "allowed_ips": ["str"]
+    "secure_on": "str",
+		"broadcast_ip": "str"
   },
   "ports": {},
   "map": [

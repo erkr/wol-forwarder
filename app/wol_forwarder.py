@@ -28,7 +28,7 @@ WOL_PORT = int(os.environ.get('WOL_PORT', 9))
 BROADCAST_IP = os.environ.get('BROADCAST_IP', '255.255.255.255')
 LISTEN_PORT = int(os.environ.get('LISTEN_PORT', 58090))
 SECURE_ON = os.environ.get('SECURE_ON', 'aabbccddeeff')
-ALLOWED_IPS = None
+
 
 
 
