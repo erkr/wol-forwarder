@@ -7,7 +7,7 @@ Only WoL packets with the correct SecureOn password are broadcasted on the local
 Reads options from /data/options.json when available (Supervisor).
 """
 
-import json
+#import json
 import os
 #import socket
 import struct
@@ -37,15 +37,14 @@ def main():
     
     # Convert hex password string to bytes if provided
     secure_on_password = None
-    if args.password:
-        try:
-            secure_on_password = bytes.fromhex(SECURE_ON)
-            if len(secure_on_password) != 6:
-                logger.error("SecureOn password must be exactly 12 hex characters")
-                return
-        except ValueError:
-            logger.error("Invalid hex password format")
+    try:
+        secure_on_password = bytes.fromhex(SECURE_ON)
+        if len(secure_on_password) != 6:
+            logger.error("SecureOn password must be exactly 12 hex characters")
             return
+    except ValueError:
+        logger.error("Invalid hex password format")
+        return
     
     # Create and start listener
     listener = WoLPacketListener(
@@ -79,6 +78,7 @@ def main():
         # server.server_close()
 
 
- if __name__ == '__main__':
-    # run()
+
+if __name__ == "__main__":
     main()
+   # run()
