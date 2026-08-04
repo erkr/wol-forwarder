@@ -1,33 +1,46 @@
 # WOL Forwarder Home Assistant Add-on
 
-This add-on provides a small deamon to forward Wake-on-LAN magic packets on your LAN. 
+This add-on provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN.
 
-The use case to be solved in more detail:
-- enable WOL remotely from the internet is a 'secure' way. 
-- many routers deliberately don't support forwarding broadcasts, only to a specific IP/port on the LAN.
-- broadcasts can be used as a DDOS attac, So opening the known WOL port 7 or 9 is not great either
-- When forwarding. it is not nice if that can be done unsolicited
+Use case:
+- Enable WOL remotely from the internet in a more secure way.
+- Many routers deliberately don't support forwarding broadcasts and only forward to a specific IP/port on the LAN.
+- Broadcasts can be abused for DDoS, so opening the standard WOL ports (7 or 9) on the internet is not ideal.
+- Forwarding should only be allowed when the packet is authenticated (SecureOn).
 
- What WOL forwarder offers:
-  - The router forwards UDP's from any undefiend port (typically above 50000) to this WOL forwarder deamon
-  - The deamon will check if the incomming UDP packet to be a valid WOL packet with a matching password (SecureON)
-  - Only valid packets are broadcasted on port 9 in hte local network (without the SecureOn)
-There are numerous WOL apps that can send magical packets with a SecureOn password. Also the Home assistant WOL integration can do that.
- 
+What WOL Forwarder offers:
+- Your router forwards UDP packets from an arbitrary external port (typically >50000) to this WOL forwarder daemon.
+- The daemon checks whether the incoming UDP packet is a valid WOL packet and validates the SecureOn password.
+- Only valid packets are broadcast on the local network (on wol_port) — the SecureOn suffix is removed before broadcasting.
+
+There are numerous WOL apps that can send magic packets with a SecureOn password. Home Assistant's WOL integration can also send SecureOn packets.
+
 Usage
-1. Install this add-on (from this repository branch) in Home Assistant Supervisor.
-2. Configure options in the Supervisor add-on UI:
-   - wol_port: UDP port to send magic packets to (default 9)
-   - listen_port: Port for receiving UDP's forwarded by your router (default 58090)
-   - secore_on: a string of exactly 6 hex values (12 bytes, default "aabbccddeeff")
-
+1. Install this add-on (add this repository as a custom add-on in Home Assistant Supervisor).
+2. Configure options in the Supervisor add-on UI (or in `/data/options.json`):
+   - `wol_port`: UDP port to send magic packets to on the LAN (default: 9)
+   - `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
+   - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
+   - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
 
 Example options.json
+```json
 {
   "wol_port": 9,
   "listen_port": 58090,
-  "secure_on": "aabbccddeeff"
+  "secure_on": "aabbccddeeff",
+  "broadcast_ip": "255.255.255.255"
 }
+```
 
 Notes
-- Host network mode is needed, so broadcast packets reach the LAN.
+- Host network mode is required so broadcast packets reach the LAN. This add-on's `config.json` sets `host_network: true`.
+- Make sure your router forwards the external UDP port you choose to the Home Assistant host on `listen_port`.
+- Ensure the target device's NIC supports Wake-on-LAN and that WOL is enabled in firmware/BIOS.
+
+Testing
+- You can test locally by running a WOL sender that supports SecureOn and pointing it to your router's public IP and the forwarded external UDP port.
+- Check the add-on logs in Supervisor for messages indicating a valid SecureOn packet was received and broadcast.
+
+Author
+- erkr
