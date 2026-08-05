@@ -8,11 +8,13 @@ RUN apt-get update \
 
 WORKDIR /usr/src/app
 
-# Copy application files
+# Copy requirements and application files
+COPY requirements.txt ./requirements.txt
 COPY app ./app
 COPY run.sh ./run.sh
 
-RUN chmod +x /usr/src/app/run.sh /usr/src/app/app/wol_forwarder.py
+RUN pip install --no-cache-dir -r requirements.txt \
+    && chmod +x /usr/src/app/run.sh /usr/src/app/app/wol_forwarder.py
 
 ENV PYTHONUNBUFFERED=1
 

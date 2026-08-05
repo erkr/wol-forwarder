@@ -1,7 +1,7 @@
 """HTTP API server for WOL Forwarder status monitoring."""
 
 import logging
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -83,17 +83,15 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
 
     @app.route('/shutdown', methods=['POST'])
     def shutdown():
-        """Gracefully shutdown the API server."""
+        """Gracefully shutdown the API server and listener."""
         logger.info("API server shutdown requested")
         try:
-            # Use Werkzeug's shutdown function
-            shutdown_func = None
-            for func_name in ['shutdown_server', 'do_teardown_appcontext']:
-                if func_name in dir(request.environ.get('werkzeug.server', {})):
-                    shutdown_func = request.environ['werkzeug.server'].get(func_name)
-                    break
-            
-            # Fallback: just return success - daemon thread will exit naturally
+            # Stop the listener gracefully
+            try:
+                listener.stop()
+            except Exception:
+                logger.exception("Error while stopping listener")
+            # Daemon thread will exit naturally; return success immediately
             return jsonify({
                 'success': True,
                 'message': 'Shutdown initiated'
