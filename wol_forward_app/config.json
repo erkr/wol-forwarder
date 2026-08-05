@@ -1,9 +1,9 @@
 {
   "name": "WOL Forwarder",
   "version": "0.2.0",
-  "slug": "wol_forwarder_app",
+  "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
-  "arch": ["amd64","armv7","arm64"],
+  "arch": ["amd64", "armv7", "arm64"],
   "startup": "services",
   "boot": "auto",
   "host_network": true,
@@ -28,15 +28,9 @@
     "http_api_enabled": "bool",
     "api_port": "int"
   },
-  "ports": {
-    "5000/tcp": 5000
-  },
-  "ports_description": {
-    "5000/tcp": "HTTP API status endpoint (only when http_api_enabled is true)"
-  },
   "map": [
     "config:rw"
   ],
-  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). allowed_hosts: optional list of hostnames; when set, only packets from the resolved IPs are allowed. dns_ttl: DNS cache TTL in seconds. http_api_enabled: enable HTTP API for monitoring. api_port: HTTP API port.",
+  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. allowed_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API.",
   "author": "erkr"
 }
