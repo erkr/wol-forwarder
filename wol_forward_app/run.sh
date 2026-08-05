@@ -5,14 +5,20 @@ set -e
 # Supervisor provides options in /data/options.json
 OPTIONS_FILE="/data/options.json"
 if [ -f "$OPTIONS_FILE" ]; then
-  WOL_PORT=$(jq -r '.wol_port // 9' $OPTIONS_FILE)
-  BROADCAST_IP=$(jq -r '.broadcast_ip // "255.255.255.255"' $OPTIONS_FILE)
-  LISTEN_PORT=$(jq -r '.listen_port // 58090' $OPTIONS_FILE)
-  SECURE_ON=$(jq -r '.secure_on // "aabbccddeeff"' $OPTIONS_FILE)
-  ALLOWED_HOSTS=$(jq -r '.allowed_hosts // [] | join(",")' $OPTIONS_FILE)
-  DNS_TTL=$(jq -r '.dns_ttl // 300' $OPTIONS_FILE)
-  HTTP_API_ENABLED=$(jq -r '.http_api_enabled // false' $OPTIONS_FILE)
-  API_PORT=$(jq -r '.api_port // 5000' $OPTIONS_FILE)
+  # Prefer top-level key, fall back to .options.<key>. Never read .schema.
+  WOL_PORT=$(jq -r '(.wol_port // .options.wol_port) // 9' "$OPTIONS_FILE")
+  BROADCAST_IP=$(jq -r '(.broadcast_ip // .options.broadcast_ip) // "255.255.255.255"' "$OPTIONS_FILE")
+  LISTEN_PORT=$(jq -r '(.listen_port // .options.listen_port) // 58090' "$OPTIONS_FILE")
+  SECURE_ON=$(jq -r '(.secure_on // .options.secure_on) // "aabbccddeeff"' "$OPTIONS_FILE")
+  # allowed_hosts: accept array or string; default to empty string
+  ALLOWED_HOSTS=$(jq -r '((.allowed_hosts // .options.allowed_hosts) // []) as $ah
+    | if ($ah|type) == "array" then $ah | join(",")
+      elif ($ah|type) == "string" then $ah
+      else "" end' "$OPTIONS_FILE")
+
+  DNS_TTL=$(jq -r '(.dns_ttl // .options.dns_ttl) // 300' "$OPTIONS_FILE")
+  HTTP_API_ENABLED=$(jq -r '(.http_api_enabled // .options.http_api_enabled) // false' "$OPTIONS_FILE")
+  API_PORT=$(jq -r '(.api_port // .options.api_port) // 5000' "$OPTIONS_FILE")
 else
   WOL_PORT=9
   LISTEN_PORT=58090
