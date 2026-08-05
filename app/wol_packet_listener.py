@@ -79,7 +79,12 @@ class WoLPacketListener:
             logger.exception("Error starting listener: %s", e)
     
     def stop(self) -> None:
-        """Stop listening."""
+        """Stop listening (idempotent)."""
+        # If already stopped (no socket and not running), do nothing
+        if not self.running and self.socket is None:
+            return
+
+        # Mark as not running and close socket if present
         self.running = False
         if self.socket:
             try:
@@ -87,6 +92,7 @@ class WoLPacketListener:
             except Exception:
                 pass
             self.socket = None
+
         logger.info("WoL listener stopped")
     
     def listen(self) -> None:
