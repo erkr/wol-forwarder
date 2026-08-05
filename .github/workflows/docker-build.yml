@@ -35,7 +35,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      
+      # When workflow is run for a tag, export IMAGE_TAG and IMAGE_TAG_NO_V
+      - name: Set image tag variables
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          TAG_NO_V=${TAG#v}
+          echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "IMAGE_TAG_NO_V=${TAG_NO_V}" >> $GITHUB_ENV
+          
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v7.3.0
         with:
@@ -43,6 +52,10 @@ jobs:
           file: ./wol_forward_app/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ env.IMAGE_NAME }}:latest, ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}        # e.g. v0.2.0 (only set on tag runs)
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_NO_V }}   # e.g. 0.2.0 (only set on tag runs)
           cache-from: type=gha
           cache-to: type=gha,mode=max
