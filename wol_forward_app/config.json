@@ -4,6 +4,7 @@
   "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "url": "https://github.com/erkr/wol-forwarder",
   "startup": "services",
   "boot": "auto",
   "host_network": true,
