@@ -24,7 +24,7 @@
     "listen_port": "int",
     "secure_on": "str",
     "broadcast_ip": "str",
-    "allowed_hosts": ["str"],
+    "allowed_hosts": "list(str)",
     "dns_ttl": "int",
     "http_api_enabled": "bool",
     "api_port": "int"
