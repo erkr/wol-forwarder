@@ -35,16 +35,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      # When workflow is run for a tag, export IMAGE_TAG and IMAGE_TAG_NO_V
-      - name: Set image tag variables
-        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Set IMAGE_TAG safely
+        shell: bash
         run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          TAG_NO_V=${TAG#v}
-          echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
-          echo "IMAGE_TAG_NO_V=${TAG_NO_V}" >> $GITHUB_ENV
-          
+          # Use the tag name for tag runs, otherwise fall back to 'latest'
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            IMAGE_TAG="${GITHUB_REF_NAME}"
+          else
+            IMAGE_TAG="latest"
+          fi
+          # Sanitize tag (replace slashes with dashes) and ensure no whitespace/comments
+          IMAGE_TAG="$(echo "$IMAGE_TAG" | sed 's/\//-/g' | tr -d '[:space:]')"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v7.3.0
         with:
@@ -52,10 +56,7 @@ jobs:
           file: ./wol_forward_app/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}        # e.g. v0.2.0 (only set on tag runs)
-            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_NO_V }}   # e.g. 0.2.0 (only set on tag runs)
+          tags: ${{ env.IMAGE_NAME }}:latest, ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}, ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          
