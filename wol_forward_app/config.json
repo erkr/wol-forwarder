@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
-  "arch": ["amd64", "armv7", "arm64"],
+  "arch": ["amd64", "armv7", "aarch64"],
   "startup": "services",
   "boot": "auto",
   "host_network": true,
@@ -23,7 +23,7 @@
     "listen_port": "int",
     "secure_on": "str",
     "broadcast_ip": "str",
-    "allowed_hosts": "list",
+    "allowed_hosts": "list(str)",
     "dns_ttl": "int",
     "http_api_enabled": "bool",
     "api_port": "int"
