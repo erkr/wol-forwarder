@@ -1,7 +1,7 @@
 {
   "name": "WOL Forwarder",
   "version": "0.2.0",
-  "slug": "wol-forwarder",
+  "slug": "wol_forwarder_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["amd64","armv7","arm64"],
   "startup": "services",
