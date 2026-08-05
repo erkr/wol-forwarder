@@ -32,5 +32,6 @@
     "config:rw"
   ],
   "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. allowed_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API.",
+  "image": "ghcr.io/erkr/wol-forwarder"
   "author": "erkr"
 }
