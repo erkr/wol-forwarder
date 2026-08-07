@@ -16,4 +16,4 @@ jobs:
           exclude-tags: dev
           delete-untagged: true
           delete-partial-images: true
-          #dry-run: true
+          dry-run: true
