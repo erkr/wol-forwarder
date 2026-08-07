@@ -1,8 +1,9 @@
 name: Daily Image Cleanup
-#on:
+#Keep 10 tagged images plus dev, drop everything else
+on:
 #  schedule:
 #    - cron: '30 1 * * *'
-#  workflow_dispatch:
+  workflow_dispatch:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
