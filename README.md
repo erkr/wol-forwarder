@@ -29,6 +29,18 @@ There are numerous WOL apps that can send magic packets with a SecureOn password
    - `http_api_enabled`: Enable HTTP API for status monitoring (default: false)
    - `api_port`: HTTP port for the status API (default: 5000)
 
+## Installation
+
+To install this third-party add-on:
+
+Open Home Assistant > Settings > Add-ons > Add-on Store.
+Click the menu (three dots in the top-right corner) and select Repositories.
+Paste the GitHub repository link into the field at the bottom:
+``` 
+https://github.com/erkr/wol-forwarder
+``` 
+Refresh the page if needed. The add-on will appear under `Wake On Lan forward Repository`.
+
 ## Example options.json
 
 ```json
