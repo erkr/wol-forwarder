@@ -10,10 +10,12 @@ import threading
 from typing import List, Optional
 from wol_packet_listener import WoLPacketListener
 from http_api import create_api_server
+import json
 
 # Configure logging
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'info')
 logging.basicConfig(
-    level=logging.INFO,
+    level=LOG_LEVEL.upper(),
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -27,6 +29,9 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '')  # comma-separated
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
 API_PORT = int(os.environ.get('API_PORT', 5000))
+
+TEST = os.environ.get('TEST', 'no data')
+logger.info("Test data: %s", json.loads(TEST))
 
 # parse allowed hosts into list
 allowed_hosts_list: List[str] = [h for h in ALLOWED_HOSTS.split(',') if h]

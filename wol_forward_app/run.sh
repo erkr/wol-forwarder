@@ -6,6 +6,9 @@ set -e
 OPTIONS_FILE="/data/options.json"
 if [ -f "$OPTIONS_FILE" ]; then
   # Prefer top-level key, fall back to .options.<key>. Never read .schema.
+  TEST=$(jq -r '(.test // .options.test) // []' "$OPTIONS_FILE")
+
+  LOG_LEVEL=$(jq -r '(.log_level // .options.log_level) // "info"' "$OPTIONS_FILE")
   WOL_PORT=$(jq -r '(.wol_port // .options.wol_port) // 9' "$OPTIONS_FILE")
   BROADCAST_IP=$(jq -r '(.broadcast_ip // .options.broadcast_ip) // "255.255.255.255"' "$OPTIONS_FILE")
   LISTEN_PORT=$(jq -r '(.listen_port // .options.listen_port) // 58090' "$OPTIONS_FILE")
@@ -30,6 +33,6 @@ else
   API_PORT=5000
 fi
 
-export WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON ALLOWED_HOSTS DNS_TTL HTTP_API_ENABLED API_PORT
+export TEST LOG_LEVEL WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON ALLOWED_HOSTS DNS_TTL HTTP_API_ENABLED API_PORT
 
 exec python3 /usr/src/app/app/wol_forwarder.py
