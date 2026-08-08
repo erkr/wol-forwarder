@@ -1,0 +1,34 @@
+---
+configuration:
+  wol_port:
+    name: WOL Port
+    description: >-
+      UDP port to send magic packets to on the LAN (default: 9, range: 1-65535).
+  listen_port:
+    name: Listen Port
+    description: >-
+      UDP port the add-on listens on for forwarded packets from your router (default: 58090, range: 1024-65535).
+  secure_on:
+    name: SecureOn
+    description: >-
+      A string of exactly 12 hex characters (e.g. "ae5accddeeff") used as SecureOn password.
+  broadcast_ip:
+    name: Broadcast IP 
+    description: >-
+      IP address used for the broadcasting forwarded magic packets (default: "255.255.255.255").
+  allowed_hosts:
+    name: Allowed Hosts
+    description: >-
+      Optional list of hostnames. If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses.
+  dns_ttl:
+    name: DNS Time To Leach
+    description: >-
+      DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution.
+  http_api_enabled:
+    name: Enable HTTP Endpoints
+    description: >-
+      Enable HTTP API for status monitoring (default: false).
+  api_port:
+    name: HTTP API port
+    description: >-
+      HTTP port for the status API (default: 5000, range: 1024-65535).
