@@ -153,7 +153,7 @@ class WoLPacketListener:
             logger.warning("Invalid WOL packet from %s:%d - %s", source_ip, source_port, result.get("error"))
             self.packets_rejected += 1
             return
-        mac_address = result.get('mac','undefined')
+        mac_address = result.get('mac','Unknown MAC')
         
         if self.mac_list and self.mac_filtering:
             if not [element for element in self.mac_list if element.get('mac',None) == mac_address]: 
@@ -238,7 +238,7 @@ class WoLPacketListener:
     def _is_source_allowed(self, source_ip: str) -> Dict:
         # allow all when no allowed_hosts configured
         if not self.allowed_hosts:
-            return {"valid": True, "name": "not defined"}
+            return {"valid": True, "name": "Unknown Host"}
 
         # Ensure cache is refreshed as needed
         self._refresh_dns_cache_if_needed()
@@ -314,7 +314,8 @@ class WoLPacketListener:
         
 
         packet_password = packet_data[102:108]
-        if packet_password != self.secure_on_password:
+        #logger.info("SecoreOn Compare [%s]:[%s]", packet_password.hex().upper(),self.secure_on_password.upper())
+        if packet_password.hex().upper() != self.secure_on_password.upper():
             return {"valid": False, "error": "WoL Packet without valid secureOn "}
 
         # magic packet to send is the first 102 bytes (sync + 16*mac)

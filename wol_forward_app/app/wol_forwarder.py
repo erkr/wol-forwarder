@@ -11,6 +11,7 @@ from typing import List, Optional
 from wol_packet_listener import WoLPacketListener
 from http_api import create_api_server
 import json
+import re
 
 # Configure logging
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'info')
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 WOL_PORT = int(os.environ.get('WOL_PORT', 9))
 BROADCAST_IP = os.environ.get('BROADCAST_IP', '255.255.255.255')
 LISTEN_PORT = int(os.environ.get('LISTEN_PORT', 58090))
-SECURE_ON = os.environ.get('SECURE_ON', 'aabbccddeeff')
+SECURE_ON = os.environ.get('SECURE_ON', 'a1:b2:c3:d4:e5:f6')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '{}')
 MAC_FILTERING = os.environ.get('MAC_FILTERING', 'false').lower() in ('true', '1', 'yes')
 MAC_LIST = os.environ.get('MAC_LIST', '{}')
@@ -43,16 +44,17 @@ def main():
     global api_thread, api_app
     
     # Convert hex password string to bytes if provided
-    secure_on_password = None
     try:
-        secure_on_password = bytes.fromhex(SECURE_ON)
-        if len(secure_on_password) != 6:
-            logger.error("SecureOn password must be exactly 12 hex characters")
+        if not re.match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$",SECURE_ON):
+            logger.error("SecureOn password must be formatted as a MAC-48 address")
             return
     except ValueError:
         logger.error("Invalid hex password format")
         return
-
+    secure_on_password = SECURE_ON.upper()
+    secure_on_password = re.sub('[:-]', '', secure_on_password)
+    logger.info("SecureOn: %s", secure_on_password)
+    
     # Create listener
     listener = WoLPacketListener(
         listen_port=LISTEN_PORT,

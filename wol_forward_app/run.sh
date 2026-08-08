@@ -10,7 +10,7 @@ if [ -f "$OPTIONS_FILE" ]; then
   WOL_PORT=$(jq -r '(.wol_port // .options.wol_port) // 9' "$OPTIONS_FILE")
   BROADCAST_IP=$(jq -r '(.broadcast_ip // .options.broadcast_ip) // "255.255.255.255"' "$OPTIONS_FILE")
   LISTEN_PORT=$(jq -r '(.listen_port // .options.listen_port) // 58090' "$OPTIONS_FILE")
-  SECURE_ON=$(jq -r '(.secure_on // .options.secure_on) // "aabbccddeeff"' "$OPTIONS_FILE")
+  SECURE_ON=$(jq -r '(.secure_on // .options.secure_on) // "a1:b2:c3:d4:e5:f6"' "$OPTIONS_FILE")
   # allowed_hosts: accept array or string; default to empty string
   ALLOWED_HOSTS=$(jq -r '((.allowed_hosts // .options.allowed_hosts) // // []' "$OPTIONS_FILE")
   MAC_LIST=$(jq -r '((.mac_list // .options.mac_list) // // []' "$OPTIONS_FILE")
@@ -22,7 +22,7 @@ else
   LOG_LEVEL='info'
   WOL_PORT=9
   LISTEN_PORT=58090
-  SECURE_ON="aabbccddeeff"
+  SECURE_ON="a1:b2:c3:d4:e5:f6"
   BROADCAST_IP="255.255.255.255"
   ALLOWED_HOSTS="[]"
   DNS_TTL=300
