@@ -22,7 +22,9 @@ class WoLPacketListener:
         wol_port: int = 9,
         broadcast_ip: str = "255.255.255.255",
         secure_on_password: bytes = b"",
-        allowed_hosts: Optional[List[str]] = None,
+        allowed_hosts: Optional[list[dict]] = None,
+        mac_list: Optional[list[dict]] = None,
+        mac_filtering: bool = False,
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
     ):
@@ -34,7 +36,7 @@ class WoLPacketListener:
             wol_port: default standard WoL 9 broadcast port
             listen_address: Address to bind to (0.0.0.0 listens on all interfaces)
             secure_on_password: Expected secureOn password (6 bytes) for verification
-            allowed_hosts: Optional list of hostnames to allow (resolved via DNS)
+            allowed_hosts: Optional list of hostname and their alias pairs to allow (resolved via DNS)
             dns_ttl: seconds to cache successful DNS results
         """
         self.listen_port = listen_port
@@ -53,6 +55,13 @@ class WoLPacketListener:
         self._dns_cache: Dict[str, Dict] = {}
         self._retry_interval = 30  # seconds: how often to retry failed/no-result hosts
 
+        # known MAC adresses and filtering, standardised on colons and uppercase
+        for dict in mac_list:
+            for k,v in dict.items():
+                if k == 'mac':
+                    dict[k] = v.replace('-',':').upper()
+        self.mac_list = mac_list or []
+        self.mac_filtering = mac_filtering
         # Packet statistics (thread-safe counters)
         self.packets_received = 0
         self.packets_accepted = 0
@@ -71,6 +80,10 @@ class WoLPacketListener:
             
             self.running = True
             logger.info("WoL listener started on %s:%d", self.listen_address, self.listen_port)
+            if self.allowed_hosts:
+              logger.info("Allowed Hosts list: %s", self.allowed_hosts)
+            if self.mac_list:
+              logger.info("MAC list: %s, Filtering=%s", self.mac_list, self.mac_filtering)
             
             self.listen()
         except PermissionError:
@@ -115,7 +128,7 @@ class WoLPacketListener:
             pass
         finally:
             self.stop()
-    
+      
     def process_packet(self, packet_data: bytes, source_addr: Tuple[str, int]) -> None:
         """
         Process a received packet.
@@ -127,10 +140,12 @@ class WoLPacketListener:
         source_ip, source_port = source_addr
         
         # Check source against allowed_hosts (if configured)
-        if not self._is_source_allowed(source_ip):
+        result = self._is_source_allowed(source_ip)
+        if not result.get("valid", False):
             logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
             self.packets_rejected += 1
             return
+        source_name=result.get("name")
         
         # Verify the packet
         result = self.verify_magic_packet(packet_data)
@@ -138,10 +153,17 @@ class WoLPacketListener:
             logger.warning("Invalid WOL packet from %s:%d - %s", source_ip, source_port, result.get("error"))
             self.packets_rejected += 1
             return
-                
+        mac_address = result.get('mac','undefined')
+        
+        if self.mac_list and self.mac_filtering:
+            if not [element for element in self.mac_list if element.get('mac',None) == mac_address]: 
+                logger.warning("WOL packet MAC not in allowed mac list: %s", mac_address)
+                return
+            logger.info("WOL packet MAC found in allowed mac list: %s", mac_address)
+            
         # Log successful packet
         self.packets_accepted += 1
-        logger.info("WoL packet with valid SecureOn password received from %s:%d", source_ip, source_port)
+        logger.info("WoL packet for %s with valid SecureOn password received from %s(%s):%d", mac_address, source_ip, source_name, source_port)
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     
@@ -173,7 +195,10 @@ class WoLPacketListener:
 
     def _refresh_dns_cache_if_needed(self):
         now = time.time()
-        for host in self.allowed_hosts:
+        # time.sleep(1)
+        for allowed_host in self.allowed_hosts:
+            host = allowed_host.get('host')
+            name = allowed_host.get('name')
             entry = self._dns_cache.get(host)
             if entry is None:
                 entry = {'ips': set(), 'last_success': 0.0, 'last_attempt': 0.0}
@@ -194,6 +219,7 @@ class WoLPacketListener:
                     ips = self._resolve_host(host)
                     if ips:
                         entry['ips'] = ips
+                        entry['name'] = name
                         entry['last_success'] = now
                         logger.debug("Resolved %s -> %s", host, ips)
                     else:
@@ -209,10 +235,10 @@ class WoLPacketListener:
                         logger.warning("DNS resolution failed for %s (no previous IPs): %s", host, e)
                 self._dns_cache[host] = entry
 
-    def _is_source_allowed(self, source_ip: str) -> bool:
-        # Backwards compatible: allow all when no allowed_hosts configured
+    def _is_source_allowed(self, source_ip: str) -> Dict:
+        # allow all when no allowed_hosts configured
         if not self.allowed_hosts:
-            return True
+            return {"valid": True, "name": "not defined"}
 
         # Ensure cache is refreshed as needed
         self._refresh_dns_cache_if_needed()
@@ -220,12 +246,13 @@ class WoLPacketListener:
         # Check against cached IPs
         for host, entry in self._dns_cache.items():
             if source_ip in entry.get('ips', set()):
-                logger.debug("Source %s matched allowed host %s", source_ip, host)
-                return True
+                name = entry.get('name', 'not defined')
+                logger.info("Source %s matched allowed host %s (%s)", source_ip, host, name)
+                return {"valid": True, "name": name}
 
         # No match
-        logger.info("Source %s is not in allowed hosts (%s)", source_ip, self.allowed_hosts)
-        return False
+        logger.debug("Source %s is not in allowed hosts (%s)", source_ip, self.allowed_hosts)
+        return {"valid": False}
 
     def get_status(self) -> Dict:
         """Return current listener status and statistics."""
@@ -280,9 +307,9 @@ class WoLPacketListener:
             return {"valid": False, "error": "Not a valid WoL packet - invalid synchronization stream"}
         
         # Extract and verify MAC address (repeated 16 times)
-        mac_address = packet_data[6:12]
+        mac_bytes = packet_data[6:12]
         for i in range(1, 16):
-            if packet_data[6 + i*6:6 + (i+1)*6] != mac_address:
+            if packet_data[6 + i*6:6 + (i+1)*6] != mac_bytes:
                 return {"valid": False, "error": "Not a valid WoL packet - MAC address mismatch in repetitions"}
         
 
@@ -292,4 +319,5 @@ class WoLPacketListener:
 
         # magic packet to send is the first 102 bytes (sync + 16*mac)
         magic_packet = packet_data[:102]
-        return { "valid": True, "error": None, "magic_packet": magic_packet }
+        mac_address = mac_bytes.hex(':').upper()
+        return { "valid": True, "magic_packet": magic_packet, "mac": mac_address }

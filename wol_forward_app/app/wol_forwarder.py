@@ -25,16 +25,13 @@ WOL_PORT = int(os.environ.get('WOL_PORT', 9))
 BROADCAST_IP = os.environ.get('BROADCAST_IP', '255.255.255.255')
 LISTEN_PORT = int(os.environ.get('LISTEN_PORT', 58090))
 SECURE_ON = os.environ.get('SECURE_ON', 'aabbccddeeff')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '')  # comma-separated
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '{}')
+MAC_FILTERING = os.environ.get('MAC_FILTERING', 'false').lower() in ('true', '1', 'yes')
+MAC_LIST = os.environ.get('MAC_LIST', '{}')
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
 API_PORT = int(os.environ.get('API_PORT', 5000))
 
-TEST = os.environ.get('TEST', 'no data')
-logger.info("Test data: %s", json.loads(TEST))
-
-# parse allowed hosts into list
-allowed_hosts_list: List[str] = [h for h in ALLOWED_HOSTS.split(',') if h]
 
 # Global references for cleanup
 api_thread: Optional[threading.Thread] = None
@@ -63,7 +60,9 @@ def main():
         wol_port=WOL_PORT,
         broadcast_ip=BROADCAST_IP,
         secure_on_password=secure_on_password,
-        allowed_hosts=allowed_hosts_list,
+        mac_list= json.loads(MAC_LIST),
+        mac_filtering=MAC_FILTERING,
+        allowed_hosts=json.loads(ALLOWED_HOSTS),
         dns_ttl=DNS_TTL,
     )
 

@@ -19,7 +19,20 @@ configuration:
   allowed_hosts:
     name: Allowed Hosts
     description: >-
-      Optional list of hostnames. If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses.
+      Optional list of allowed hosts. 
+      If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses.
+      - host: DNS name or IP address
+      - name: friendly name for the host (used for logging)
+  mac_list:
+    name: MAC-Alias pairs 
+    description: >-
+      Optional list of known MAC-Alias pairs 
+      - mac: (IEEE 802) formatted MAC-48 address with six groups of two hexadecimal digits, separated by hyphens - or colons
+      - name: a friendly name to the targetted device
+  mac_filtering:  
+    name: MAC Filter
+    description: >-
+      Only forward MAC adresses defined in mac_list (default false)
   dns_ttl:
     name: DNS Time To Leach
     description: >-
