@@ -29,7 +29,7 @@
     "secure_on": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)",
     "broadcast_ip": "match(^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$)",
     "allowed_hosts": [{"host":"str", "name":"str"}],
-    "mac_list": ["mac": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)", "name":"str"}],
+    "mac_list": [{"mac": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)", "name":"str"}],
     "mac_filtering": "bool",
     "dns_ttl": "int(60,3600)",
     "http_api_enabled": "bool",
