@@ -12,8 +12,8 @@ if [ -f "$OPTIONS_FILE" ]; then
   LISTEN_PORT=$(jq -r '(.listen_port // .options.listen_port) // 58090' "$OPTIONS_FILE")
   SECURE_ON=$(jq -r '(.secure_on // .options.secure_on) // "a1:b2:c3:d4:e5:f6"' "$OPTIONS_FILE")
   # allowed_hosts: accept array or string; default to empty string
-  ALLOWED_HOSTS=$(jq -r '(.allowed_hosts // .options.allowed_hosts) // // []' "$OPTIONS_FILE")
-  MAC_LIST=$(jq -r '((.mac_list // .options.mac_list) // // []' "$OPTIONS_FILE")
+  ALLOWED_HOSTS=$(jq -r '(.allowed_hosts // .options.allowed_hosts) // []' "$OPTIONS_FILE")
+  MAC_LIST=$(jq -r '(.mac_list // .options.mac_list) // []' "$OPTIONS_FILE")
   MAC_FILTERING=$(jq -r '(.mac_filtering // .options.mac_filtering) // false' "$OPTIONS_FILE")
   DNS_TTL=$(jq -r '(.dns_ttl // .options.dns_ttl) // 300' "$OPTIONS_FILE")
   HTTP_API_ENABLED=$(jq -r '(.http_api_enabled // .options.http_api_enabled) // false' "$OPTIONS_FILE")
