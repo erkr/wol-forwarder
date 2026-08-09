@@ -51,7 +51,7 @@ class WoLPacketListener:
         # allowed hosts and DNS cache
         self.allowed_hosts = allowed_hosts or []
         self.dns_ttl = dns_ttl
-        # cache entry structure: host -> { 'ips': set(str), 'last_success': float, 'last_attempt': float }
+        # cache entry structure: host -> { 'ips': set(str), 'name': str, 'last_success': float, 'last_attempt': float }
         self._dns_cache: Dict[str, Dict] = {}
         self._retry_interval = 30  # seconds: how often to retry failed/no-result hosts
 
@@ -83,8 +83,8 @@ class WoLPacketListener:
             if self.allowed_hosts:
               logger.info("Allowed Hosts list: %s", self.allowed_hosts)
             if self.mac_list:
-              logger.info("MAC list: %s, Filtering=%s", self.mac_list, self.mac_filtering)
-            
+              logger.info("MAC list: %s, MAC Filtering=%s", self.mac_list, self.mac_filtering)
+               
             self.listen()
         except PermissionError:
             logger.error("Permission denied: cannot bind to port %d. Try a port >1024 or run as root.", self.listen_port)
@@ -147,7 +147,7 @@ class WoLPacketListener:
             return
         source_name=result.get("name")
         
-        # Verify the packet
+        # Verify the packet is a valid WOL packet with the expected SecureOn
         result = self.verify_magic_packet(packet_data)
         if not result.get("valid", False):
             logger.warning("Invalid WOL packet from %s:%d - %s", source_ip, source_port, result.get("error"))
@@ -155,15 +155,22 @@ class WoLPacketListener:
             return
         mac_address = result.get('mac','Unknown MAC')
         
+        
         if self.mac_list and self.mac_filtering:
-            if not [element for element in self.mac_list if element.get('mac',None) == mac_address]: 
-                logger.warning("WOL packet MAC not in allowed mac list: %s", mac_address)
+            found = False
+            for element in self.mac_list:
+                if element.get('mac',None) == mac_address: 
+                    mac_name = element.get('name','No name')
+                    logger.info("WOL packet in allowed mac list: %s (%s)", mac_address, mac_name)
+                    found = True
+            if not found:        
+                logger.warning("WOL packet reject - MAC not in allowed mac list: %s", mac_address)
+                self.packets_rejected += 1
                 return
-            logger.info("WOL packet MAC found in allowed mac list: %s", mac_address)
             
         # Log successful packet
         self.packets_accepted += 1
-        logger.info("WoL packet for %s with valid SecureOn password received from %s(%s):%d", mac_address, source_ip, source_name, source_port)
+        logger.info("Valid WoL packet for MAC %s received from %s(%s):%d", mac_address, source_ip, source_name, source_port)
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     
@@ -201,7 +208,7 @@ class WoLPacketListener:
             name = allowed_host.get('name')
             entry = self._dns_cache.get(host)
             if entry is None:
-                entry = {'ips': set(), 'last_success': 0.0, 'last_attempt': 0.0}
+                entry = {'ips': set(), 'name': 'n/a', 'last_success': 0.0, 'last_attempt': 0.0}
 
             need_try = False
             if entry['ips']:
@@ -221,7 +228,7 @@ class WoLPacketListener:
                         entry['ips'] = ips
                         entry['name'] = name
                         entry['last_success'] = now
-                        logger.debug("Resolved %s -> %s", host, ips)
+                        logger.debug("Resolved %s -> %s (%s)", host, ips, name)
                     else:
                         # resolution returned empty set; keep previous ips if any
                         if entry['ips']:
@@ -251,7 +258,7 @@ class WoLPacketListener:
                 return {"valid": True, "name": name}
 
         # No match
-        logger.debug("Source %s is not in allowed hosts (%s)", source_ip, self.allowed_hosts)
+        logger.debug("Source %s is not in allowed hosts list", source_ip)
         return {"valid": False}
 
     def get_status(self) -> Dict:
@@ -269,9 +276,12 @@ class WoLPacketListener:
                 'forwarded': self.packets_forwarded,
             },
             'allowed_hosts': self.allowed_hosts,
+            'mac_list': self.mac_list,
+            'mac_filtering': self.mac_filtering,
             'dns_cache': {
                 host: {
                     'ips': sorted(list(entry.get('ips', set()))),
+                    'name': entry.get('name', ''),
                     'resolved': bool(entry.get('ips')),
                     'last_success': entry.get('last_success', 0),
                     'last_attempt': entry.get('last_attempt', 0),
@@ -314,9 +324,8 @@ class WoLPacketListener:
         
 
         packet_password = packet_data[102:108]
-        #logger.info("SecoreOn Compare [%s]:[%s]", packet_password.hex().upper(),self.secure_on_password.upper())
-        if packet_password.hex().upper() != self.secure_on_password.upper():
-            return {"valid": False, "error": "WoL Packet without valid secureOn "}
+        if packet_password != self.secure_on_password:
+            return {"valid": False, "error": "WoL Packet rejected - invalid secureOn"}
 
         # magic packet to send is the first 102 bytes (sync + 16*mac)
         magic_packet = packet_data[:102]

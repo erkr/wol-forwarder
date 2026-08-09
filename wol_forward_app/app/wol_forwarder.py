@@ -43,17 +43,15 @@ def main():
     """Run the WoL packet listener."""
     global api_thread, api_app
     
-    # Convert hex password string to bytes if provided
+    # Convert hex password string to 6 bytes if provided
     try:
         if not re.match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$",SECURE_ON):
-            logger.error("SecureOn password must be formatted as a MAC-48 address")
+            logger.error("SecureOn not formatted as a MAC-48 address (eg a1:b2:c3:d4:e5:f6)")
             return
     except ValueError:
         logger.error("Invalid hex password format")
         return
-    secure_on_password = SECURE_ON.upper()
-    secure_on_password = re.sub('[:-]', '', secure_on_password)
-    logger.info("SecureOn: %s", secure_on_password)
+    secure_on_password = bytes.fromhex(re.sub('[:-]', '',SECURE_ON))
     
     # Create listener
     listener = WoLPacketListener(
