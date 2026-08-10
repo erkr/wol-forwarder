@@ -45,3 +45,13 @@ configuration:
     name: HTTP API port
     description: >-
       HTTP port for the status API (default: 5000, range: 1024-65535).
+  webhook_id:
+    name: Webhook for WOL updates
+    description: >-
+      If provided, WoL updates will be posted to Home Assistant.
+      Default an internal URL is used (supervisor API). If that fails, an external url can be defined via ha_api_url
+  ha_api_url:
+    name: Home Assistant API url
+    description: >-
+      URL to the Home Assistant API (example: http://homeassistant.local:8123/api). 
+      Will be used for posting webhooks, in case a webhook_id is provided 

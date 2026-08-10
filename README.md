@@ -25,10 +25,56 @@ There are numerous WOL apps that can send magic packets with a SecureOn password
    - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
    - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
    - `allowed_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses
+   - `mac_list`: Optional list of know target addresses (mac - name pairs). The names make logging and webhook data more readible.
+	 - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
    - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
    - `http_api_enabled`: Enable HTTP API for status monitoring (default: false)
    - `api_port`: HTTP port for the status API (default: 5000)
+	 - `webhook_id`: When defined, data for forwarded packets will be posted
+	 - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api)
 
+## Example default (minimum) config:
+```
+log_level: info
+wol_port: 9
+listen_port: 58090
+secure_on: a1:b2:c3:d4:e5:f6
+broadcast_ip: 255.255.255.255
+allowed_hosts: []
+mac_list: []
+mac_filtering: false
+dns_ttl: 300
+http_api_enabled: false
+api_port: 5000
+webhook_id: ''
+```
+
+## Example full config
+```
+log_level: warning
+wol_port: 9
+listen_port: 59990
+secure_on: a1:b2:c3:d4:e5:f6
+broadcast_ip: 255.255.255.255
+allowed_hosts:
+  - host: 192.168.178.19
+    name: iPhone Dad
+  - host: 192.168.178.16
+    name: iPhone Mom
+  - host: my.ddns.net
+    name: Utah
+mac_list:
+  - mac: 1A:2B:3C:4D:5E:6F
+    name: MediaTower
+  - mac: ec:43:f6:aa:78:6a
+    name: My NAS
+mac_filtering: true
+dns_ttl: 300
+http_api_enabled: false
+api_port: 5000
+webhook_id: -ExxxxxxxxxxxxxxxxHs
+ha_api_url: http://192.168.178.2:8123/api
+```
 ## Installation
 
 To install this third-party add-on:
@@ -40,21 +86,6 @@ Paste the GitHub repository link into the field at the bottom:
 https://github.com/erkr/wol-forwarder
 ``` 
 Refresh the page if needed. The add-on will appear under `Wake On Lan forward Repository`.
-
-## Example options.json
-
-```json
-{
-  "wol_port": 9,
-  "listen_port": 58090,
-  "secure_on": "aabbccddeeff",
-  "broadcast_ip": "255.255.255.255",
-  "allowed_hosts": ["sender.example.com"],
-  "dns_ttl": 300,
-  "http_api_enabled": true,
-  "api_port": 5000
-}
-```
 
 ## HTTP Status API
 
@@ -85,10 +116,12 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
       "rejected": 2,
       "forwarded": 40
     },
-    "allowed_hosts": ["sender.example.com"],
+    "allowed_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
+		"mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "dns_cache": {
       "sender.example.com": {
         "ips": ["203.0.113.5"],
+				"name": "friendly name",
         "resolved": true,
         "last_success": 1722812735.123,
         "last_attempt": 1722812735.456
@@ -185,17 +218,6 @@ series:
 - Ensure the target device's NIC supports Wake-on-LAN and that WOL is enabled in firmware/BIOS.
 - The HTTP API is disabled by default for security. Enable only if you need monitoring.
 - API access is restricted to localhost by default. Do not expose the API to untrusted networks.
-
-## Testing
-
-- Local test: set `allowed_hosts` to `["localhost"]` in options and run the add-on on the host; sending a SecureOn WOL packet from 127.0.0.1 should be accepted.
-- Fallback behavior: if a host resolved successfully in the past but a later DNS refresh fails, the add-on keeps the previous IPs and continues allowing those sources until the next successful refresh.
-- Logs:
-  - Successful resolution: debug "Resolved <host> -> {ips}"
-  - Failed refresh but keeping previous IPs: warning with details
-  - Rejected packet because not allowed: warning "Dropping packet from ... — source not allowed"
-  - API server startup: info "Starting HTTP API server on port 5000"
-  - API server shutdown: info "Shutting down HTTP API server"
 
 ## Author
 
