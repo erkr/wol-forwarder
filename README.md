@@ -131,6 +131,23 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
 }
 ```
 
+## Webhook (optionally)
+Wol Forwarder can post a webhooks when a valid packet was forwared.
+This requirs `webhook_id` to bedefined and optionally a configured external url (`ha_api_url`).
+Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
+      only work when the webhook is defiend with `local_only=false` (no errors in the log!)
+WebHook posts contains JSON payload data with aditional info:
+```
+{
+   "event":"forwarded", 
+   "source_ip": source_ip, 
+	 "source_name": source_name, 
+	 "mac_address": mac_address, 
+	 "mac_name": mac_name 
+}
+```
+Note: when host or mac addresses are not known, the adresses and names will be equal.
+ 
 ### Home Assistant Integration Examples
 
 #### Template Sensor for Monitoring

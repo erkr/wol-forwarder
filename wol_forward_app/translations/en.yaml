@@ -53,5 +53,5 @@ configuration:
   ha_api_url:
     name: Home Assistant API url
     description: >-
-      URL to the Home Assistant API (example: http://homeassistant.local:8123/api). 
+      URL to the Home Assistant API (example: http://homeassistant:8123/api). 
       Will be used for posting webhooks, in case a webhook_id is provided 
