@@ -14,18 +14,18 @@ def send_ha_webhook(webhook_id, payload_data):
     # Fetch the supervisor token automatically provided to the add-on container
     supervisor_token = os.environ.get("SUPERVISOR_TOKEN", None)
     # Alternative is a specified URL
-    homeassistant_api_url = os.environ.get("HA_API_URL", 'http://192.168.178.47:8123/api/webhook/')
-    if supervisor_token:
+    homeassistant_api_url = os.environ.get("HA_API_URL", '')
+    if homeassistant_api_url:
+        url = f"{homeassistant_api_url}/webhook/{webhook_id}"
+        headers = {
+             "Content-Type": "application/json"
+        }
+    elif supervisor_token:
         # Internal Supervisor API URL for Home Assistant Core endpoints
         url = f"http://supervisor/core/api/webhook/{webhook_id}"
         headers = {
             "Authorization": f"Bearer {supervisor_token}",
             "Content-Type": "application/json"
-        }
-    elif homeassistant_api_url:
-        url = f"{homeassistant_api_url}{webhook_id}"
-        headers = {
-             "Content-Type": "application/json"
         }
     else:
         logging.error("Failed to retrieve HA address for posting WebHook")
