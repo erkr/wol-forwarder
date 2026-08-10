@@ -21,8 +21,8 @@ def send_ha_webhook(webhook_id, payload_data):
              "Content-Type": "application/json"
         }
     elif supervisor_token:
-        # Internal Supervisor API URL for Home Assistant Core endpoints
-        url = f"http://supervisor/core/api/webhook/{webhook_id}"
+        # Internal API URL for Home Assistant endpoints
+        url = f"http://homeassistant/api/webhook/{webhook_id}"
         headers = {
             "Authorization": f"Bearer {supervisor_token}",
             "Content-Type": "application/json"
