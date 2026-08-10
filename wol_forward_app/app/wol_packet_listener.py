@@ -2,11 +2,10 @@ import socket
 import logging
 import time
 from typing import Optional, Dict, Tuple, List, Set
+from ha_webhook import send_ha_webhook
 
 # Configure logging (the main module configures root logging; keep this basic)
 logger = logging.getLogger(__name__)
-
-
 
 
 class WoLPacketListener:
@@ -27,6 +26,7 @@ class WoLPacketListener:
         mac_filtering: bool = False,
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
+        webhook_id: str = "",
     ):
         """
         Initialize the WoL packet listener.
@@ -47,6 +47,7 @@ class WoLPacketListener:
         self.socket = None
         self.running = False
         self.recv_timeout = recv_timeout
+        self.webhook_id = webhook_id
 
         # allowed hosts and DNS cache
         self.allowed_hosts = allowed_hosts or []
@@ -96,6 +97,7 @@ class WoLPacketListener:
         # If already stopped (no socket and not running), do nothing
         if not self.running and self.socket is None:
             return
+        logger.info("WoL listener Stopping...")
 
         # Mark as not running and close socket if present
         self.running = False
@@ -106,7 +108,6 @@ class WoLPacketListener:
                 pass
             self.socket = None
 
-        logger.info("WoL listener stopped")
     
     def listen(self) -> None:
         """Main loop: receive packets and process them."""
@@ -145,7 +146,7 @@ class WoLPacketListener:
             logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
             self.packets_rejected += 1
             return
-        source_name=result.get("name")
+        source_name=result.get("name", source_ip)
         
         # Verify the packet is a valid WOL packet with the expected SecureOn
         result = self.verify_magic_packet(packet_data)
@@ -153,24 +154,25 @@ class WoLPacketListener:
             logger.warning("Invalid WOL packet from %s:%d - %s", source_ip, source_port, result.get("error"))
             self.packets_rejected += 1
             return
-        mac_address = result.get('mac','Unknown MAC')
+        mac_address = result.get('mac','Unknown')
         
-        
-        if self.mac_list and self.mac_filtering:
+        mac_name = mac_address # default if not in list
+        if self.mac_list:
             found = False
             for element in self.mac_list:
                 if element.get('mac',None) == mac_address: 
-                    mac_name = element.get('name','No name')
-                    logger.info("WOL packet in allowed mac list: %s (%s)", mac_address, mac_name)
+                    mac_name = element.get('name',mac_address)
+                    logger.debug("WOL packet found in mac list: %s (%s)", mac_address, mac_name)
                     found = True
-            if not found:        
-                logger.warning("WOL packet reject - MAC not in allowed mac list: %s", mac_address)
+            if not found and self.mac_filtering:        
+                logger.warning("WOL packet reject - MAC %s not in allowed mac list", mac_address)
                 self.packets_rejected += 1
                 return
             
         # Log successful packet
         self.packets_accepted += 1
-        logger.info("Valid WoL packet for MAC %s received from %s(%s):%d", mac_address, source_ip, source_name, source_port)
+        logger.info("Valid WoL packet for Target %s received from %s", mac_name, source_name)
+        send_ha_webhook(self.webhook_id, {"event":"forwarded", "source_ip": source_ip, "source_name": source_name, "mac_address": mac_address, "mac_name": mac_name })
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     
@@ -245,7 +247,7 @@ class WoLPacketListener:
     def _is_source_allowed(self, source_ip: str) -> Dict:
         # allow all when no allowed_hosts configured
         if not self.allowed_hosts:
-            return {"valid": True, "name": "Unknown Host"}
+            return {"valid": True, "name": source_ip}
 
         # Ensure cache is refreshed as needed
         self._refresh_dns_cache_if_needed()
@@ -253,8 +255,8 @@ class WoLPacketListener:
         # Check against cached IPs
         for host, entry in self._dns_cache.items():
             if source_ip in entry.get('ips', set()):
-                name = entry.get('name', 'not defined')
-                logger.info("Source %s matched allowed host %s (%s)", source_ip, host, name)
+                name = entry.get('name', source_ip)
+                logger.debug("Source %s matched allowed host %s (%s)", source_ip, host, name)
                 return {"valid": True, "name": name}
 
         # No match

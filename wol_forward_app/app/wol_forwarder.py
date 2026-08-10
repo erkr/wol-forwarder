@@ -33,7 +33,7 @@ MAC_LIST = os.environ.get('MAC_LIST', '{}')
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
 API_PORT = int(os.environ.get('API_PORT', 5000))
-
+WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
 
 # Global references for cleanup
 api_thread: Optional[threading.Thread] = None
@@ -138,6 +138,7 @@ def main():
         mac_filtering=MAC_FILTERING,
         allowed_hosts=json.loads(ALLOWED_HOSTS),
         dns_ttl=DNS_TTL,
+        webhook_id=WEBHOOK_ID
     )
 
     # Start HTTP API server if enabled
@@ -163,8 +164,8 @@ def main():
             logger.info("Shutting down HTTP API server")
             # The daemon flag ensures the thread exits when main thread exits
             # Add a small wait for graceful shutdown
-            if api_thread is not None and api_thread.is_alive():
-                api_thread.join(timeout=2)
+            #if api_thread is not None and api_thread.is_alive():
+            #    api_thread.join(timeout=2)
 
 
 if __name__ == "__main__":
