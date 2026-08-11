@@ -11,7 +11,6 @@
   "homeassistant": false,
   "homeassistant_api": true,
   "options": {
-    "log_level": "info",
     "wol_port": 9,
     "listen_port": 58090,
     "secure_on": "a1:b2:c3:d4:e5:f6",
@@ -25,7 +24,6 @@
     "webhook_id": ""
   },
   "schema": {
-    "log_level": "list(debug|info|warning|error)",
     "wol_port": "int(1,65535)",
     "listen_port": "int(1024,65535)",
     "secure_on": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)",
@@ -37,7 +35,8 @@
     "http_api_enabled": "bool",
     "api_port": "int(1024,65535)",
     "webhook_id": "str",
-    "ha_api_url": "url?"
+    "ha_api_url": "url?",
+    "log_level": "list(debug|info|warning|error)?",
   },
   "map": [
     {

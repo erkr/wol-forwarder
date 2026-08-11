@@ -17,12 +17,22 @@ configuration:
     description: >-
       IP address used for the broadcasting forwarded magic packets (default: "255.255.255.255").
   allowed_hosts:
-    name: Allowed Hosts
+    name: Known Hosts (sources)
     description: >-
-      Optional list of allowed hosts. 
-      If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses.
-      - host: DNS name or IP address
-      - name: friendly name for the host (used for logging)
+      Optional list of known hosts. 
+      If provided, the add-on will resolve these hostnames for reporting and optionally for filtering.
+    item:
+      name: Host
+      description: >-
+        Host and friendly name pair. Used for logging/reporting. 
+        If provided, the add-on will try to resolve the hostname.
+    fields:
+      host: DNS name or IP address 
+      name: friendly name for the host 
+  host_filtering:
+    name: Host Filter
+    description: >-
+      Only forward WoL packets received from sources in the host list (default false)
   mac_list:
     name: MAC-Alias pairs 
     description: >-
