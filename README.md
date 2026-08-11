@@ -136,7 +136,7 @@ Wol Forwarder can post a webhooks when a valid packet was forwared.
 This requirs `webhook_id` to bedefined and optionally a configured external url (`ha_api_url`).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
       only work when the webhook is defiend with `local_only=false` (no errors in the log!)
-WebHook posts contains JSON payload data with aditional info:
+WebHook posts contain JSON payload data with aditional info:
 ```
 {
    "event":"forwarded", 
