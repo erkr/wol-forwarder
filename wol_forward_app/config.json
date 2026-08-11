@@ -1,6 +1,6 @@
 {
   "name": "WOL Forwarder",
-  "version": "0.2.21",
+  "version": "0.2.22",
   "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["aarch64", "amd64"],
@@ -43,11 +43,11 @@
   "map": [
     {
       "type": "homeassistant_config",
-      "read_only": false,
+      "read_only": true,
       "path": "/config"
     }
   ],
-  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. known_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API.",
+  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. known_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API. Webhook_id for reporting forwards",
   "image": "ghcr.io/erkr/wol-forwarder",
   "author": "erkr"
 }
