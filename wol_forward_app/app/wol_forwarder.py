@@ -27,7 +27,8 @@ WOL_PORT = int(os.environ.get('WOL_PORT', 9))
 BROADCAST_IP = os.environ.get('BROADCAST_IP', '255.255.255.255')
 LISTEN_PORT = int(os.environ.get('LISTEN_PORT', 58090))
 SECURE_ON = os.environ.get('SECURE_ON', 'a1:b2:c3:d4:e5:f6')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '{}')
+HOST_FILTERING = os.environ.get('HOST_FILTERING', 'false').lower() in ('true', '1', 'yes')
+KNOWN_HOSTS = os.environ.get('KNOWN_HOSTS', '{}')
 MAC_FILTERING = os.environ.get('MAC_FILTERING', 'false').lower() in ('true', '1', 'yes')
 MAC_LIST = os.environ.get('MAC_LIST', '{}')
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
@@ -64,7 +65,7 @@ def validate_settings():
         logger.error("DNS_TTL invalid value %s range:60 - 3600", DNS_TTL)
         return False
     
-    # validate Allowed Host list
+    # validate known Host list
     schema={
             "type": "array",
             "items": {
@@ -81,7 +82,7 @@ def validate_settings():
               }
             }
     try:
-        instance = json.loads(ALLOWED_HOSTS)
+        instance = json.loads(KNOWN_HOSTS)
         if instance:
             validate(instance=instance, schema=schema)
     except Exception as ex:
@@ -136,7 +137,8 @@ def main():
         secure_on_password=secure_on_password,
         mac_list= json.loads(MAC_LIST),
         mac_filtering=MAC_FILTERING,
-        allowed_hosts=json.loads(ALLOWED_HOSTS),
+        known_hosts=json.loads(KNOWN_HOSTS),
+        host_filtering=HOST_FILTERING,
         dns_ttl=DNS_TTL,
         webhook_id=WEBHOOK_ID
     )

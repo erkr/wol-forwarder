@@ -1,6 +1,6 @@
 {
   "name": "WOL Forwarder",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["aarch64", "amd64"],
@@ -15,7 +15,8 @@
     "listen_port": 58090,
     "secure_on": "a1:b2:c3:d4:e5:f6",
     "broadcast_ip": "255.255.255.255",
-    "allowed_hosts": [],
+    "known_hosts": [],
+    "host_filtering": false,
     "mac_list": [],
     "mac_filtering": false,
     "dns_ttl": 300,
@@ -28,7 +29,8 @@
     "listen_port": "int(1024,65535)",
     "secure_on": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)",
     "broadcast_ip": "match(^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$)",
-    "allowed_hosts": [{"host":"str", "name":"str"}],
+    "known_hosts": [{"host":"str", "name":"str"}],
+    "host_filtering": "bool",
     "mac_list": [{"mac": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)", "name":"str"}],
     "mac_filtering": "bool",
     "dns_ttl": "int(60,3600)",
@@ -45,7 +47,7 @@
       "path": "/config"
     }
   ],
-  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. allowed_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API.",
+  "options_description": "listen_port: UDP port to receive magic packets with secureOn (usually above 50000, add-on uses host network). wol_port: broadcast destination (only when secureOn is correct). secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. known_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API.",
   "image": "ghcr.io/erkr/wol-forwarder",
   "author": "erkr"
 }

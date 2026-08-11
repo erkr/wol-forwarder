@@ -24,8 +24,9 @@ There are numerous WOL apps that can send magic packets with a SecureOn password
    - `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
    - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
    - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
-   - `allowed_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames and only accept packets whose source IP matches one of the resolved addresses
-   - `mac_list`: Optional list of know target addresses (mac - name pairs). The names make logging and webhook data more readible.
+   - `known_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames for logging/reporting and optionally filtering
+   - `host_filtering`: only accept packets whose source IP matches one of the resolved addresses in the known host list
+   - `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
 	 - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
    - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
    - `http_api_enabled`: Enable HTTP API for status monitoring (default: false)
@@ -35,12 +36,12 @@ There are numerous WOL apps that can send magic packets with a SecureOn password
 
 ## Example default (minimum) config:
 ```
-log_level: info
 wol_port: 9
 listen_port: 58090
 secure_on: a1:b2:c3:d4:e5:f6
 broadcast_ip: 255.255.255.255
-allowed_hosts: []
+known_hosts: []
+host_filtering: false
 mac_list: []
 mac_filtering: false
 dns_ttl: 300
@@ -56,13 +57,14 @@ wol_port: 9
 listen_port: 59990
 secure_on: a1:b2:c3:d4:e5:f6
 broadcast_ip: 255.255.255.255
-allowed_hosts:
+known_hosts:
   - host: 192.168.178.19
     name: iPhone Dad
   - host: 192.168.178.16
     name: iPhone Mom
   - host: my.ddns.net
     name: Utah
+host_filtering: true
 mac_list:
   - mac: 1A:2B:3C:4D:5E:6F
     name: MediaTower
@@ -73,7 +75,7 @@ dns_ttl: 300
 http_api_enabled: false
 api_port: 5000
 webhook_id: -ExxxxxxxxxxxxxxxxHs
-ha_api_url: http://192.168.178.2:8123/api
+ha_api_url: http://homeassistant:8123/api
 ```
 ## Installation
 
@@ -116,7 +118,7 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
       "rejected": 2,
       "forwarded": 40
     },
-    "allowed_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
+    "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
 		"mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "dns_cache": {
       "sender.example.com": {
