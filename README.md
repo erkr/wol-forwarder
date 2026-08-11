@@ -6,15 +6,17 @@ Use case:
 - Enable WOL remotely from the internet in a more secure way.
 - Many routers deliberately don't support forwarding broadcasts and only forward to a specific IP/port on the LAN.
 - Broadcasts can be abused for DDoS, so opening the standard WOL ports (7 or 9) on the internet is not ideal.
-- Forwarding should only be allowed when the packet is authenticated (SecureOn).
+- Forwarding should only be allowed when the packet is authenticated (i.e. by SecureOn).
 
 What WOL Forwarder offers:
 - Your router forwards UDP packets from an arbitrary external port (typically >50000) to this WOL forwarder daemon.
 - The daemon checks whether the incoming UDP packet is a valid WOL packet and validates the SecureOn password.
-- Only valid packets are broadcast on the local network (on wol_port) — the SecureOn suffix is removed before broadcasting.
+- Lists of known sources (hosts) and targets (mac) can be defined and optionally used for filtering
+- Only legimit packets are broadcast on the local network (on wol_port). Here the SecureOn suffix is removed before broadcasting.
 - Optional HTTP API for monitoring forwarder status and packet statistics.
 
-There are numerous WOL apps that can send magic packets with a SecureOn password. Home Assistant's WOL integration can also send SecureOn packets.
+There are numerous WOL apps that can send magic packets with a SecureOn password. 
+Note: Home Assistant's WOL integration can also send SecureOn packets.
 
 ## Usage
 
@@ -25,14 +27,14 @@ There are numerous WOL apps that can send magic packets with a SecureOn password
    - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
    - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
    - `known_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames for logging/reporting and optionally filtering
-   - `host_filtering`: only accept packets whose source IP matches one of the resolved addresses in the known host list
+      - `host_filtering`: only accept packets whose source IP matches one of the resolved addresses in the known host list
    - `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
-	 - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
+      - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
    - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
    - `http_api_enabled`: Enable HTTP API for status monitoring (default: false)
-   - `api_port`: HTTP port for the status API (default: 5000)
-	 - `webhook_id`: When defined, data for forwarded packets will be posted
-	 - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api)
+      - `api_port`: HTTP port for the status API (default: 5000)
+   - `webhook_id`: When defined, data for forwarded packets will be posted
+      - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
 
 ## Example default (minimum) config:
 ```
@@ -137,7 +139,7 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
 Wol Forwarder can post a webhooks when a valid packet was forwared.
 This requirs `webhook_id` to bedefined and optionally a configured external url (`ha_api_url`).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
-      only work when the webhook is defiend with `local_only=false` (no errors in the log!)
+      only work when the webhook is defined with `local_only=false` (no errors in the log!)
 WebHook posts contain JSON payload data with aditional info:
 ```
 {
