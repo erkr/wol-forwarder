@@ -21,7 +21,8 @@ class WoLPacketListener:
         wol_port: int = 9,
         broadcast_ip: str = "255.255.255.255",
         secure_on_password: bytes = b"",
-        allowed_hosts: Optional[list[dict]] = None,
+        known_hosts: Optional[list[dict]] = None,
+        host_filtering: bool = False,
         mac_list: Optional[list[dict]] = None,
         mac_filtering: bool = False,
         dns_ttl: int = 300,
@@ -36,8 +37,13 @@ class WoLPacketListener:
             wol_port: default standard WoL 9 broadcast port
             listen_address: Address to bind to (0.0.0.0 listens on all interfaces)
             secure_on_password: Expected secureOn password (6 bytes) for verification
-            allowed_hosts: Optional list of hostname and their alias pairs to allow (resolved via DNS)
+            known_hosts: Optional list of hostname and their alias pairs (resolved via DNS)
+            host_filtering: Use the known hosts list for filtering WoL requests
+            mac_list: Optional list of MAC addreses and their alias pairs 
+            mac_filtering: Use the MAC list for filtering WoL requests
             dns_ttl: seconds to cache successful DNS results
+            recv_timeout: timeout for the receive socket
+            webhook_id: optional web_hook id to post reports to 
         """
         self.listen_port = listen_port
         self.listen_address = listen_address
@@ -50,7 +56,8 @@ class WoLPacketListener:
         self.webhook_id = webhook_id
 
         # allowed hosts and DNS cache
-        self.allowed_hosts = allowed_hosts or []
+        self.known_hosts = known_hosts or []
+        self.host_filtering = host_filtering
         self.dns_ttl = dns_ttl
         # cache entry structure: host -> { 'ips': set(str), 'name': str, 'last_success': float, 'last_attempt': float }
         self._dns_cache: Dict[str, Dict] = {}
@@ -81,10 +88,14 @@ class WoLPacketListener:
             
             self.running = True
             logger.info("WoL listener started on %s:%d", self.listen_address, self.listen_port)
-            if self.allowed_hosts:
-              logger.info("Allowed Hosts list: %s", self.allowed_hosts)
+            if self.known_hosts:
+              logger.debug("Known Hosts list: %s, HOST Filtering=%s", self.known_hosts, self.host_filtering)
+            else: 
+              logger.debug("No known Hosts list defined")
             if self.mac_list:
-              logger.info("MAC list: %s, MAC Filtering=%s", self.mac_list, self.mac_filtering)
+              logger.debug("MAC list: %s, MAC Filtering=%s", self.mac_list, self.mac_filtering)
+            else: 
+              logger.debug("No MAC list defined")
                
             self.listen()
         except PermissionError:
@@ -140,7 +151,7 @@ class WoLPacketListener:
         """
         source_ip, source_port = source_addr
         
-        # Check source against allowed_hosts (if configured)
+        # Check source against known_hosts (if filtering and list are configured)
         result = self._is_source_allowed(source_ip)
         if not result.get("valid", False):
             logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
@@ -205,9 +216,9 @@ class WoLPacketListener:
     def _refresh_dns_cache_if_needed(self):
         now = time.time()
         # time.sleep(1)
-        for allowed_host in self.allowed_hosts:
-            host = allowed_host.get('host')
-            name = allowed_host.get('name')
+        for known_host in self.known_hosts:
+            host = known_host.get('host')
+            name = known_host.get('name')
             entry = self._dns_cache.get(host)
             if entry is None:
                 entry = {'ips': set(), 'name': 'n/a', 'last_success': 0.0, 'last_attempt': 0.0}
@@ -245,23 +256,26 @@ class WoLPacketListener:
                 self._dns_cache[host] = entry
 
     def _is_source_allowed(self, source_ip: str) -> Dict:
-        # allow all when no allowed_hosts configured
-        if not self.allowed_hosts:
+        # allow all when no known_hosts configured
+        if not self.known_hosts:
             return {"valid": True, "name": source_ip}
 
         # Ensure cache is refreshed as needed
         self._refresh_dns_cache_if_needed()
 
-        # Check against cached IPs
+        # Check against refeshed/cached IPs
         for host, entry in self._dns_cache.items():
             if source_ip in entry.get('ips', set()):
                 name = entry.get('name', source_ip)
                 logger.debug("Source %s matched allowed host %s (%s)", source_ip, host, name)
                 return {"valid": True, "name": name}
-
+                
         # No match
-        logger.debug("Source %s is not in allowed hosts list", source_ip)
-        return {"valid": False}
+        if self.host_filtering:
+            logger.debug("Source %s is not in allowed hosts list", source_ip)
+            return {"valid": False}
+        # no filtering
+        return {"valid": True, "name": source_ip}
 
     def get_status(self) -> Dict:
         """Return current listener status and statistics."""
@@ -277,7 +291,8 @@ class WoLPacketListener:
                 'rejected': self.packets_rejected,
                 'forwarded': self.packets_forwarded,
             },
-            'allowed_hosts': self.allowed_hosts,
+            'known_hosts': self.known_hosts,
+            'host_filtering': self.host_filtering,
             'mac_list': self.mac_list,
             'mac_filtering': self.mac_filtering,
             'dns_cache': {
