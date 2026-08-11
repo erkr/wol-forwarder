@@ -108,7 +108,6 @@ class WoLPacketListener:
         # If already stopped (no socket and not running), do nothing
         if not self.running and self.socket is None:
             return
-        logger.info("WoL listener Stopping...")
 
         # Mark as not running and close socket if present
         self.running = False
@@ -118,11 +117,11 @@ class WoLPacketListener:
             except Exception:
                 pass
             self.socket = None
+        logger.info("WoL listener Stopped...")
 
     
     def listen(self) -> None:
         """Main loop: receive packets and process them."""
-        logger.info("Listening for WOL packets...")
         try:
             while self.running:
                 try:

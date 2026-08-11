@@ -5,6 +5,8 @@ Reads options from /data/options.json when available (Supervisor).
 """
 
 import os
+import sys
+import signal
 import logging
 import threading
 from typing import List, Optional
@@ -39,6 +41,10 @@ WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
 # Global references for cleanup
 api_thread: Optional[threading.Thread] = None
 api_app = None
+
+def sigterm_handler(_signo, _stack_frame):
+    # Raises SystemExit(0) to close gracefully inside dockers:
+    sys.exit(0)
 
 def validate_settings():
     # validate SecurOn 
@@ -120,7 +126,9 @@ def validate_settings():
 def main():
     """Run the WoL packet listener."""
     global api_thread, api_app
-    
+    # register handler to gracefully close inside dockers
+    signal.signal(signal.SIGTERM, sigterm_handler)
+    logger.info("WoL Forwarder Starting...")
     if not validate_settings():
         logger.error("Invalid settings passed to WoL Forwarder, Abort...")
         return
@@ -160,14 +168,12 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        listener.stop()
         # Gracefully shutdown API if it was started
         if api_app is not None:
             logger.info("Shutting down HTTP API server")
             # The daemon flag ensures the thread exits when main thread exits
-            # Add a small wait for graceful shutdown
-            #if api_thread is not None and api_thread.is_alive():
-            #    api_thread.join(timeout=2)
+        listener.stop()
+        logger.info("WoL Forwarder Stopped.")
 
 
 if __name__ == "__main__":
