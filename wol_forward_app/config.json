@@ -1,6 +1,6 @@
 {
   "name": "WOL Forwarder",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) magic packets with a matching secureOn are broadcasted on your LAN.",
   "arch": ["aarch64", "amd64"],
@@ -36,7 +36,7 @@
     "api_port": "int(1024,65535)",
     "webhook_id": "str",
     "ha_api_url": "url?",
-    "log_level": "list(debug|info|warning|error)?",
+    "log_level": "list(debug|info|warning|error)?"
   },
   "map": [
     {
