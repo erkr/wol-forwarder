@@ -1,3 +1,5 @@
+![image](./wol_forward_app/icon.png)
+
 # WOL Forwarder Home Assistant app (Add-on)
 
 This app (add-on) provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN.
