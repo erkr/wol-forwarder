@@ -125,9 +125,13 @@ class WoLPacketListener:
         try:
             while self.running:
                 try:
-                    data, addr = self.socket.recvfrom(1024)
-                    self.packets_received += 1
-                    self.process_packet(data, addr)
+                    if self.known_hosts:  # Ensure cache is frequently refreshed 
+                        self._refresh_dns_cache_if_needed()
+                    if self.running:
+                        data, addr = self.socket.recvfrom(1024)
+                        self.packets_received += 1
+                    if self.running:
+                        self.process_packet(data, addr)
                 except socket.timeout:
                     continue
                 except OSError as e:
@@ -151,7 +155,7 @@ class WoLPacketListener:
         source_ip, source_port = source_addr
         
         # Check source against known_hosts (if filtering and list are configured)
-        result = self._is_source_allowed(source_ip)
+        result = self._check_known_hosts(source_ip)
         if not result.get("valid", False):
             logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
             self.packets_rejected += 1
@@ -214,7 +218,6 @@ class WoLPacketListener:
 
     def _refresh_dns_cache_if_needed(self):
         now = time.time()
-        # time.sleep(1)
         for known_host in self.known_hosts:
             host = known_host.get('host')
             name = known_host.get('name')
@@ -254,15 +257,12 @@ class WoLPacketListener:
                         logger.warning("DNS resolution failed for %s (no previous IPs): %s", host, e)
                 self._dns_cache[host] = entry
 
-    def _is_source_allowed(self, source_ip: str) -> Dict:
+    def _check_known_hosts(self, source_ip: str) -> Dict:
         # allow all when no known_hosts configured
         if not self.known_hosts:
             return {"valid": True, "name": source_ip}
 
-        # Ensure cache is refreshed as needed
-        self._refresh_dns_cache_if_needed()
-
-        # Check against refeshed/cached IPs
+        # Check against cached IPs
         for host, entry in self._dns_cache.items():
             if source_ip in entry.get('ips', set()):
                 name = entry.get('name', source_ip)
