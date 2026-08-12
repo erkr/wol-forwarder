@@ -35,7 +35,7 @@ MAC_FILTERING = os.environ.get('MAC_FILTERING', 'false').lower() in ('true', '1'
 MAC_LIST = os.environ.get('MAC_LIST', '{}')
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
-API_PORT = int(os.environ.get('API_PORT', 5000))
+API_PORT = int(os.environ.get('API_PORT', 58080))
 WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
 
 # Global references for cleanup
@@ -122,12 +122,15 @@ def validate_settings():
         
     # passed all        
     return True
+
     
 def main():
     """Run the WoL packet listener."""
     global api_thread, api_app
+    
     # register handler to gracefully close inside dockers
     signal.signal(signal.SIGTERM, sigterm_handler)
+    
     logger.info("WoL Forwarder Starting...")
     if not validate_settings():
         logger.error("Invalid settings passed to WoL Forwarder, Abort...")
@@ -163,15 +166,16 @@ def main():
     else:
         logger.debug("HTTP API server is disabled")
 
+    
     try:
         listener.start()
     except KeyboardInterrupt:
         pass
     finally:
-        # Gracefully shutdown API if it was started
         if api_app is not None:
-            logger.info("Shutting down HTTP API server")
+            logger.info("HTTP API server Stopped")
             # The daemon flag ensures the thread exits when main thread exits
+        # Just to be sure:
         listener.stop()
         logger.info("WoL Forwarder Stopped.")
 

@@ -22,17 +22,17 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
     """
     app = Flask(__name__)
 
-    @app.route('/status', methods=['GET'])
-    def get_status():
-        """Return current WOL forwarder status and statistics."""
+    @app.route('/config', methods=['GET'])
+    def get_config():
+        """Return current WOL forwarder config."""
         try:
-            status = listener.get_status()
+            status = listener.get_config()
             return jsonify({
                 'success': True,
                 'data': status
             }), 200
         except Exception as e:
-            logger.exception("Error retrieving status: %s", e)
+            logger.exception("Error retrieving config: %s", e)
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -50,10 +50,10 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
     def get_stats():
         """Return packet statistics only."""
         try:
-            status = listener.get_status()
+            status = listener.get_stats()
             return jsonify({
                 'success': True,
-                'data': status['packets']
+                'data': status
             }), 200
         except Exception as e:
             logger.exception("Error retrieving stats: %s", e)
@@ -66,38 +66,13 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
     def get_dns_cache():
         """Return DNS cache state."""
         try:
-            status = listener.get_status()
+            status = listener.get_dns_cache()
             return jsonify({
                 'success': True,
-                'data': {
-                    'allowed_hosts': status['allowed_hosts'],
-                    'dns_cache': status['dns_cache']
-                }
+                'data': status
             }), 200
         except Exception as e:
-            logger.exception("Error retrieving DNS cache: %s", e)
-            return jsonify({
-                'success': False,
-                'error': str(e)
-            }), 500
-
-    @app.route('/shutdown', methods=['POST'])
-    def shutdown():
-        """Gracefully shutdown the API server and listener."""
-        logger.info("API server shutdown requested")
-        try:
-            # Stop the listener gracefully
-            try:
-                listener.stop()
-            except Exception:
-                logger.exception("Error while stopping listener")
-            # Daemon thread will exit naturally; return success immediately
-            return jsonify({
-                'success': True,
-                'message': 'Shutdown initiated'
-            }), 200
-        except Exception as e:
-            logger.exception("Error during shutdown: %s", e)
+            logger.exception("Error retrieving DNS Cache: %s", e)
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -109,7 +84,7 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
         return jsonify({
             'success': False,
             'error': 'Endpoint not found',
-            'available_endpoints': ['/status', '/health', '/stats', '/dns', '/shutdown']
+            'available_endpoints': ['/config', '/health', '/stats', '/dns']
         }), 404
 
     @app.errorhandler(500)
