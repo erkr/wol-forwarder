@@ -1,12 +1,13 @@
-# WOL Forwarder Home Assistant Add-on
+# WOL Forwarder Home Assistant app (Add-on)
 
-This add-on provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN.
+This app (add-on) provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN.
 
 Use case:
 - Enable WOL remotely from the internet in a more secure way.
 - Many routers deliberately don't support forwarding broadcasts and only forward to a specific IP/port on the LAN.
 - Broadcasts can be abused for DDoS, so opening the standard WOL ports (7 or 9) on the internet is not ideal.
-- Forwarding should only be allowed when the packet is authenticated (i.e. by SecureOn).
+- Forwarding should only be allowed when the packet is at least authenticated by SecureOn.
+- Optionally filter on sources (hosts) and / or targets (MAC)
 
 What WOL Forwarder offers:
 - Your router forwards UDP packets from an arbitrary external port (typically >50000) to this WOL forwarder daemon.
@@ -97,13 +98,12 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
 
 ### API Endpoints
 
-- `GET /status` — Full status with statistics and DNS cache state
+- `GET /config` — Retrieve the configuration passed to the app.
 - `GET /health` — Quick health check (HTTP 200 if running, 503 if stopped)
-- `GET /stats` — Packet statistics only
-- `GET /dns` — DNS cache state only
-- `POST /shutdown` — Gracefully shutdown the API (for maintenance)
+- `GET /stats` — Retrieve Packet statistics 
+- `GET /dns` — Retrieve the current DNS cache 
 
-### Status Response Example
+### Config Response Example
 
 ```json
 {
@@ -114,24 +114,47 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
     "listen_port": 58090,
     "wol_port": 9,
     "broadcast_ip": "255.255.255.255",
+    "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
+    "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
+  }
+}
+```
+
+### Health Response Example
+
+```
+{
+  "listening": true,
+  "status": "ok"
+}
+```
+
+### Stats Response Example
+
+```
+{
     "packets": {
       "received": 42,
       "accepted": 40,
       "rejected": 2,
       "forwarded": 40
-    },
-    "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
-		"mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
+    }
+}
+```
+
+### DNS Response Example
+
+```
+{
     "dns_cache": {
       "sender.example.com": {
         "ips": ["203.0.113.5"],
-				"name": "friendly name",
+        "name": "friendly name",
         "resolved": true,
         "last_success": 1722812735.123,
         "last_attempt": 1722812735.456
       }
     }
-  }
 }
 ```
 
@@ -145,9 +168,9 @@ WebHook posts contain JSON payload data with aditional info:
 {
    "event":"forwarded", 
    "source_ip": source_ip, 
-	 "source_name": source_name, 
-	 "mac_address": mac_address, 
-	 "mac_name": mac_name 
+   "source_name": source_name, 
+   "mac_address": mac_address, 
+   "mac_name": mac_name 
 }
 ```
 Note: when host or mac addresses are not known, the adresses and names will be equal.
