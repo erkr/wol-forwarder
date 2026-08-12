@@ -115,7 +115,9 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
     "wol_port": 9,
     "broadcast_ip": "255.255.255.255",
     "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
+    "host_filtering": true,
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
+    "mac_filtering": false,
   }
 }
 ```
@@ -179,7 +181,7 @@ Note: when host or mac addresses are not known, the adresses and names will be e
 
 #### Webhook in Automation
 Example of handling webhooks posted by WoL Forwarder. 
-	
+  
 ```yaml
 alias: Handle WoL webhook
 description: ''
