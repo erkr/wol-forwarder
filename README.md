@@ -177,31 +177,41 @@ Note: when host or mac addresses are not known, the adresses and names will be e
  
 ### Home Assistant Integration Examples
 
-#### Template Sensor for Monitoring
-
-Add this to your `configuration.yaml`:
-
+#### Webhook in Automation
+Example of handling webhooks posted by WoL Forwarder. 
+	
 ```yaml
-template:
-  - sensor:
-      - name: WOL Forwarder Status
-        unique_id: wol_forwarder_status
-        unit_of_measurement: packets
-        state: >
-          {% set data = state_attr('sensor.wol_forwarder_stats', 'forwarded') %}
-          {{ data | default('unavailable') }}
-        attributes:
-          received: "{{ state_attr('sensor.wol_forwarder_stats', 'received') }}"
-          accepted: "{{ state_attr('sensor.wol_forwarder_stats', 'accepted') }}"
-          rejected: "{{ state_attr('sensor.wol_forwarder_stats', 'rejected') }}"
-          forwarded: "{{ state_attr('sensor.wol_forwarder_stats', 'forwarded') }}"
+alias: Handle WoL webhook
+description: ''
+triggers:
+  - trigger: webhook
+    allowed_methods:
+      - POST
+      - PUT
+    local_only: false
+    webhook_id: -ExxxxxxxxxxxxxxxxHs
+conditions: []
+actions:
+  - action: notify.send_message
+    metadata: {}
+    target:
+      entity_id: notify.iphone_me
+    data:
+      title: '{{ ''WOL: ''~trigger.json.event}}'
+      message: >-
+        {{'Target '~trigger.json.mac_name~' Waked by
+        '~trigger.json.source_name}}
 ```
+Notes:
+  - make sure the webhook id used matches with the configured one
+  - Without external HA URL configured, `local_only` must be set to `false` (bug in supervisor proxy, loosing the source IP)
 
+        
 #### REST Sensor for Health Check
 
 ```yaml
 rest:
-  - resource: http://localhost:5000/health
+  - resource: http://localhost:58080/health
     scan_interval: 30
     sensor:
       - name: WOL Forwarder Health
@@ -211,11 +221,11 @@ rest:
         value_template: "{{ value_json.status }}"
 ```
 
-#### REST Sensor for Full Status
+#### REST Sensor for Full Stats
 
 ```yaml
 rest:
-  - resource: http://localhost:5000/status
+  - resource: http://localhost:58080/stats
     scan_interval: 60
     sensor:
       - name: WOL Forwarder Stats
@@ -223,36 +233,6 @@ rest:
         json_attributes:
           - data
         value_template: "{{ 'ok' if value_json.success else 'error' }}"
-```
-
-#### Automation for Monitoring Rejected Packets
-
-```yaml
-automation:
-  - alias: Alert on WOL Forwarder Errors
-    trigger:
-      platform: template
-      value_template: >
-        {{ (state_attr('sensor.wol_forwarder_stats', 'data').packets.rejected | int(0)) > 5 }}
-    action:
-      service: notify.notify
-      data:
-        message: "WOL Forwarder has rejected {{ state_attr('sensor.wol_forwarder_stats', 'data').packets.rejected }} packets"
-```
-
-#### Custom Card Example (if using custom components)
-
-```yaml
-type: custom:apexcharts-card
-header:
-  title: WOL Forwarder Statistics
-series:
-  - entity: sensor.wol_forwarder_stats
-    attribute: data.packets.received
-    name: Received
-  - entity: sensor.wol_forwarder_stats
-    attribute: data.packets.forwarded
-    name: Forwarded
 ```
 
 ## Notes
