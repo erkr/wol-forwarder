@@ -276,24 +276,36 @@ class WoLPacketListener:
         # no filtering
         return {"valid": True, "name": source_ip}
 
-    def get_status(self) -> Dict:
-        """Return current listener status and statistics."""
+    def get_config(self) -> Dict:
+        """Return current listener config."""
         return {
             'running': self.running,
             'listen_address': self.listen_address,
             'listen_port': self.listen_port,
             'wol_port': self.wol_port,
             'broadcast_ip': self.broadcast_ip,
+            'known_hosts': self.known_hosts,
+            'host_filtering': self.host_filtering,
+            'mac_list': self.mac_list,
+            'mac_filtering': self.mac_filtering,
+        }
+        
+    def get_stats(self) -> Dict:
+        """Return current listener statistics."""
+        return {
+            'running': self.running,
             'packets': {
                 'received': self.packets_received,
                 'accepted': self.packets_accepted,
                 'rejected': self.packets_rejected,
                 'forwarded': self.packets_forwarded,
             },
-            'known_hosts': self.known_hosts,
-            'host_filtering': self.host_filtering,
-            'mac_list': self.mac_list,
-            'mac_filtering': self.mac_filtering,
+        }
+
+    def get_dns_cache(self) -> Dict:
+        """Return current listener dns cache."""
+        return {
+            'running': self.running,
             'dns_cache': {
                 host: {
                     'ips': sorted(list(entry.get('ips', set()))),

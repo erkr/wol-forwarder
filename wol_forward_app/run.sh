@@ -17,7 +17,7 @@ if [ -f "$OPTIONS_FILE" ]; then
   MAC_FILTERING=$(jq -r '(.mac_filtering // .options.mac_filtering) // false' "$OPTIONS_FILE")
   DNS_TTL=$(jq -r '(.dns_ttl // .options.dns_ttl) // 300' "$OPTIONS_FILE")
   HTTP_API_ENABLED=$(jq -r '(.http_api_enabled // .options.http_api_enabled) // false' "$OPTIONS_FILE")
-  API_PORT=$(jq -r '(.api_port // .options.api_port) // 5000' "$OPTIONS_FILE")
+  API_PORT=$(jq -r '(.api_port // .options.api_port) // 58080' "$OPTIONS_FILE")
   WEBHOOK_ID=$(jq -r '(.webhook_id // .options.webhook_id) // ""' "$OPTIONS_FILE")
   HA_API_URL=$(jq -r '(.ha_api_url // .options.ha_api_url) // ""' "$OPTIONS_FILE")
 else
@@ -32,7 +32,7 @@ else
   MAC_FILTERING=false
   DNS_TTL=300
   HTTP_API_ENABLED=false
-  API_PORT=5000
+  API_PORT=58080
   WEBHOOK_ID=""
   HA_API_URL=""
 fi
