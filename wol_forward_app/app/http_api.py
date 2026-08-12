@@ -95,5 +95,5 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
             'error': 'Internal server error'
         }), 500
 
-    logger.info("HTTP API server configured successfully")
+    logger.debug("HTTP API server configured successfully")
     return app
