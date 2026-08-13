@@ -19,6 +19,7 @@ if [ -f "$OPTIONS_FILE" ]; then
   HTTP_API_ENABLED=$(jq -r '(.http_api_enabled // .options.http_api_enabled) // false' "$OPTIONS_FILE")
   API_PORT=$(jq -r '(.api_port // .options.api_port) // 58080' "$OPTIONS_FILE")
   WEBHOOK_ID=$(jq -r '(.webhook_id // .options.webhook_id) // ""' "$OPTIONS_FILE")
+  WEBHOOK_SEL=$(jq -r '(.webhook_sel // .options.webhook_sel) // "forward"' "$OPTIONS_FILE")
   HA_API_URL=$(jq -r '(.ha_api_url // .options.ha_api_url) // ""' "$OPTIONS_FILE")
 else
   LOG_LEVEL='info'
@@ -35,8 +36,9 @@ else
   API_PORT=58080
   WEBHOOK_ID=""
   HA_API_URL=""
+	WEBHOOK_SEL="forward"
 fi
 
-export LOG_LEVEL WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON KNOWN_HOSTS HOST_FILTERING MAC_LIST MAC_FILTERING DNS_TTL HTTP_API_ENABLED API_PORT WEBHOOK_ID HA_API_URL
+export LOG_LEVEL WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON KNOWN_HOSTS HOST_FILTERING MAC_LIST MAC_FILTERING DNS_TTL HTTP_API_ENABLED API_PORT WEBHOOK_ID WEBHOOK_SEL HA_API_URL
 
 exec python3 /usr/src/app/app/wol_forwarder.py

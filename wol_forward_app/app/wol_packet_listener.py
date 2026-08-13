@@ -28,6 +28,7 @@ class WoLPacketListener:
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
         webhook_id: str = "",
+        webhook_sel: str = "forward"
     ):
         """
         Initialize the WoL packet listener.
@@ -54,6 +55,8 @@ class WoLPacketListener:
         self.running = False
         self.recv_timeout = recv_timeout
         self.webhook_id = webhook_id
+        self.webhook_forward = (webhook_sel in ["all","forward"]) and webhook_id
+        self.webhook_reject = (webhook_sel in ["all","reject"]) and webhook_id
 
         # allowed hosts and DNS cache
         self.known_hosts = known_hosts or []
@@ -158,15 +161,23 @@ class WoLPacketListener:
         result = self._check_known_hosts(source_ip)
         if not result.get("valid", False):
             logger.warning("Dropping packet from %s:%d — source not allowed", source_ip, source_port)
+            msg = f"Dropping packet from {source_ip}:{source_port} — source not allowed"
+            logger.warning(msg)
             self.packets_rejected += 1
+            if self.webhook_reject:
+                send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, "rejected": self.packets_rejected, "accepted": self.packets_accepted})
             return
         source_name=result.get("name", source_ip)
         
         # Verify the packet is a valid WOL packet with the expected SecureOn
         result = self.verify_magic_packet(packet_data)
         if not result.get("valid", False):
-            logger.warning("Invalid WOL packet from %s:%d - %s", source_ip, source_port, result.get("error"))
+            error = result.get("error","invalid packet")
+            msg = f"Invalid WOL packet from {source_ip}:{source_port} - {error}"
+            logger.warning(msg)
             self.packets_rejected += 1
+            if self.webhook_reject:
+                send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, "rejected": self.packets_rejected, "accepted": self.packets_accepted})
             return
         mac_address = result.get('mac','Unknown')
         
@@ -178,15 +189,20 @@ class WoLPacketListener:
                     mac_name = element.get('name',mac_address)
                     logger.debug("WOL packet found in mac list: %s (%s)", mac_address, mac_name)
                     found = True
+                    break
             if not found and self.mac_filtering:        
-                logger.warning("WOL packet reject - MAC %s not in allowed mac list", mac_address)
+                msg = f"WOL packet reject - MAC {mac_address} not in allowed mac list"
+                logger.warning(msg)
                 self.packets_rejected += 1
+                if self.webhook_reject:
+                   send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, "rejected": self.packets_rejected, "accepted": self.packets_accepted})
                 return
             
         # Log successful packet
         self.packets_accepted += 1
         logger.info("Valid WoL packet for Target %s received from %s", mac_name, source_name)
-        send_ha_webhook(self.webhook_id, {"event":"forwarded", "source_ip": source_ip, "source_name": source_name, "mac_address": mac_address, "mac_name": mac_name })
+        if self.webhook_forward:
+            send_ha_webhook(self.webhook_id, {"event":"forwarded", "source_ip": source_ip, "source_name": source_name, "mac_address": mac_address, "mac_name": mac_name })
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     

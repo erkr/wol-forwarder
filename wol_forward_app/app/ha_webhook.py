@@ -16,6 +16,7 @@ def send_ha_webhook(webhook_id, payload_data):
     # Alternative is a specified URL
     homeassistant_api_url = os.environ.get("HA_API_URL", '')
     if homeassistant_api_url:
+        # Default is overruled by some (External) URL, only supported without authorization
         url = f"{homeassistant_api_url}/webhook/{webhook_id}"
         headers = {
              "Content-Type": "application/json"
