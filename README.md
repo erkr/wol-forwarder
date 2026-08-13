@@ -1,4 +1,4 @@
-![image](./wol_forward_app/icon.png)
+![image](./wol_forward_app/logo.png)
 
 # WOL Forwarder Home Assistant app (Add-on)
 
