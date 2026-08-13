@@ -1,0 +1,54 @@
+{
+  "name": "WoL Forwarder",
+  "version": "1.2.0b1",
+  "slug": "wol_forward_app",
+  "description": "Wake-on-LAN (WOL) packets with  secureOn forwarding on your LAN.",
+  "arch": ["aarch64", "amd64"],
+  "url": "https://github.com/erkr/wol-forwarder",
+  "startup": "services",
+  "boot": "auto",
+  "host_network": true,
+  "homeassistant": false,
+  "homeassistant_api": true,
+  "options": {
+    "wol_port": 9,
+    "listen_port": 58090,
+    "secure_on": "a1:b2:c3:d4:e5:f6",
+    "broadcast_ip": "255.255.255.255",
+    "known_hosts": [],
+    "host_filtering": false,
+    "mac_list": [],
+    "mac_filtering": false,
+    "dns_ttl": 300,
+    "http_api_enabled": false,
+    "api_port": 58080,
+    "webhook_id": ""
+  },
+  "schema": {
+    "wol_port": "int(1,65535)",
+    "listen_port": "int(1024,65535)",
+    "secure_on": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)",
+    "broadcast_ip": "match(^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$)",
+    "known_hosts": [{"host":"str", "name":"str"}],
+    "host_filtering": "bool",
+    "mac_list": [{"mac": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)", "name":"str"}],
+    "mac_filtering": "bool",
+    "dns_ttl": "int(60,3600)",
+    "http_api_enabled": "bool",
+    "api_port": "int(1024,65535)",
+    "webhook_id": "str",
+    "webhook_sel": "list(all|forward|reject|disabled)?"
+    "ha_api_url": "url?",
+    "log_level": "list(debug|info|warning|error)?"
+  },
+  "map": [
+    {
+      "type": "homeassistant_config",
+      "read_only": true,
+      "path": "/config"
+    }
+  ],
+  "options_description": "listen_port: UDP port to receive magic packets with secureOn. wol_port: broadcast destination port. secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. known_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API. Webhook_id for reporting forwards",
+  "image": "ghcr.io/erkr/wol-forwarder",
+  "author": "erkr"
+}
