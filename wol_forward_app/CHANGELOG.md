@@ -2,7 +2,7 @@
 
 ## v1.1.1
 Improvements:
-- Added optional config option for webhook reports (all, forwarded, rejected, disabled)
+- webhook report options configurable(all, forward, reject, disabled), where the default remains forward events.
 
 ## v1.1.0
 Improvements:
@@ -12,3 +12,6 @@ Improvements:
 Breaking:
 - Revised endpoints. 
 - Removed shutdown endpoint
+
+## v1.0.0
+Initial stable release
