@@ -38,14 +38,14 @@
     "ha_api_url": "url?",
     "log_level": "list(debug|info|warning|error)?"
   },
-	"ports": {
+  "ports": {
      "58080/tcp": null,
-     "58090/udp": 58090,
-	},
-	"ports_description": {
+     "58090/udp": 58090
+  },
+  "ports_description": {
      "58080/tcp": "HTTP_API port",
-     "58090/udp": "WOL listen port",
-	},
+     "58090/udp": "WOL listen port"
+  },
   "map": [
     {
       "type": "homeassistant_config",
