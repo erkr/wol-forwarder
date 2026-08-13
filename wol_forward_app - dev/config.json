@@ -18,7 +18,7 @@
     "mac_list": [],
     "mac_filtering": false,
     "dns_ttl": 300,
-    "http_api_enabled": false,
+    "http_api_enabled": true,
     "webhook_id": ""
   },
   "schema": {

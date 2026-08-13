@@ -4,10 +4,6 @@ configuration:
     name: WOL Port
     description: >-
       UDP port to send magic packets to on the LAN (default: 9, range: 1-65535).
-  listen_port:
-    name: Listen Port
-    description: >-
-      This setting is obsolete now. Please remove. Use port settng under network instead.
   secure_on:
     name: SecureOn
     description: >-
@@ -69,17 +65,13 @@ configuration:
     name: Enable HTTP Endpoints
     description: >-
       Enable HTTP API for status monitoring (default: false).
-  api_port:
-    name: HTTP API port
-    description: >-
-      This setting is obsolete now. Please remove. Use port settng under network instead.
   webhook_id:
     name: Webhook for WOL updates
     description: >-
       If provided, WoL updates will be posted to Home Assistant.
       Default an internal URL is used (supervisor API). If that fails, an external url can be defined via ha_api_url
   webhook_sel:
-    name: Webhook selection
+    name: Webhook Reporting setting
     description: >-
       If a Webhook_id is provided, WoL updates will be reported to Home Assistant.
       Options are all, forward, reject or disabled (no reporting). Default is forward.
@@ -90,6 +82,8 @@ configuration:
       Will be used for posting webhooks, in case a webhook_id is provided 
 network:
   58080/tcp: >-
-      HTTP port for the status API (default: 58080, range: 1024-65535). Only open to your LAN if required
+      The HTTP port for the status API can be used in Home assistant without enabling this setting!
+      Within Home assistant use the app/addon slug (e.g.: http://ab353c6f-wol-forward-app:58080)
+      Only open this for LAN access if really required, as this API runs on a leight weight non-secure webserver!
   58090/udp: >-
-      UDP port the add-on listens on for forwarded packets from your router (default: 58090, range: 1024-65535).
+      UDP port on your LAN the app/add-on listens for WOL  packets forwarded from your router (default: 58090, range: 1024-65535).
