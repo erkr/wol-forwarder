@@ -40,10 +40,6 @@
      "58080/tcp": null,
      "58090/udp": 58090
   },
-  "ports_description": {
-     "58080/tcp": "HTTP_API port",
-     "58080/tcp": "WOL listen port"
-  },
   "map": [
     {
       "type": "homeassistant_config",

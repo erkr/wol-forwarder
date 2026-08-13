@@ -89,5 +89,7 @@ configuration:
       URL to the Home Assistant API (example: http://homeassistant:8123/api). 
       Will be used for posting webhooks, in case a webhook_id is provided 
 network:
-  58080/tcp: HTTP port for the status API (default: 58080, range: 1024-65535). Only open to your LAN if required
-  58090/udp: UDP port the add-on listens on for forwarded packets from your router (default: 58090, range: 1024-65535).
+  58080/tcp: >-
+      HTTP port for the status API (default: 58080, range: 1024-65535). Only open to your LAN if required
+  58090/udp: >-
+      UDP port the add-on listens on for forwarded packets from your router (default: 58090, range: 1024-65535).
