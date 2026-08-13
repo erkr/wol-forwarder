@@ -1,6 +1,8 @@
-# WOL Forwarder Home Assistant app (Add-on)
+![image](./wol_forward_app/logo.png)
 
-This app (add-on) provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN.
+# Forward Wake-on-LAN packets on your LAN (App/Add-on)
+
+This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
 
 Use case:
 - Enable WOL remotely from the internet in a more secure way.
