@@ -38,7 +38,7 @@ Note: Home Assistant's WOL integration can also send SecureOn packets.
       - `api_port`: HTTP port for the status API (default: 5000)
    - `webhook_id`: When defined, data for forwarded packets will be posted
       - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
-
+      - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
 ## Example default (minimum) config:
 ```
 wol_port: 9
@@ -81,6 +81,7 @@ http_api_enabled: false
 api_port: 5000
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
+webhook_sel: all
 ```
 ## Installation
 
@@ -163,11 +164,12 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
 ```
 
 ## Webhook (optionally)
-Wol Forwarder can post a webhooks when a valid packet was forwared.
+Wol Forwarder can post a webhooks when a valid packet was forwared and/or rejected.
 This requirs `webhook_id` to bedefined and optionally a configured external url (`ha_api_url`).
+Use `webhook_sel` to select what is reported (default reports forwarded packets).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
-      only work when the webhook is defined with `local_only=false` (no errors in the log!)
-WebHook posts contain JSON payload data with aditional info:
+      only work when the webhook is defined with `local_only=false` (There will be no errors in the app log, as the call returns success!)
+WebHook 'forwarded' posts contain JSON payload data with additional soruce and target info:
 ```
 {
    "event":"forwarded", 
@@ -177,6 +179,16 @@ WebHook posts contain JSON payload data with aditional info:
    "mac_name": mac_name 
 }
 ```
+WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
+```
+{
+   "event":"rejected", 
+   "message": "reason", 
+   "rejected": number,
+   "accepted": number
+}
+```
+
 Note: when host or mac addresses are not known, the adresses and names will be equal.
  
 ### Home Assistant Integration Examples

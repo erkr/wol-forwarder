@@ -37,6 +37,7 @@ DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
 API_PORT = int(os.environ.get('API_PORT', 58080))
 WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
+WEBHOOK_SEL = os.environ.get('WEBHOOK_SEL', 'forward')
 
 # Global references for cleanup
 api_thread: Optional[threading.Thread] = None
@@ -151,7 +152,8 @@ def main():
         known_hosts=json.loads(KNOWN_HOSTS),
         host_filtering=HOST_FILTERING,
         dns_ttl=DNS_TTL,
-        webhook_id=WEBHOOK_ID
+        webhook_id=WEBHOOK_ID,
+        webhook_sel=WEBHOOK_SEL
     )
 
     # Start HTTP API server if enabled

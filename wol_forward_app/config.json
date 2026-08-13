@@ -1,6 +1,6 @@
 {
   "name": "WoL Forwarder",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "slug": "wol_forward_app",
   "description": "Wake-on-LAN (WOL) packets with  secureOn forwarding on your LAN.",
   "arch": ["aarch64", "amd64"],
@@ -37,6 +37,7 @@
     "http_api_enabled": "bool",
     "api_port": "int(1024,65535)",
     "webhook_id": "str",
+    "webhook_sel": "list(all|forward|reject|disabled)?"
     "ha_api_url": "url?",
     "log_level": "list(debug|info|warning|error)?"
   },
