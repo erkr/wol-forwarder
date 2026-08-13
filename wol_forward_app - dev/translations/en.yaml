@@ -1,0 +1,93 @@
+---
+configuration:
+  wol_port:
+    name: WOL Port
+    description: >-
+      UDP port to send magic packets to on the LAN (default: 9, range: 1-65535).
+  listen_port:
+    name: Listen Port
+    description: >-
+      This setting is obsolete now. Please remove. Use port settng under network instead.
+  secure_on:
+    name: SecureOn
+    description: >-
+      A SecureOn password, formatted as MAC-48 address with six groups of two hexadecimal digits, separated by hyphens - or colons (IEEE 802) .
+  broadcast_ip:
+    name: Broadcast IP 
+    description: >-
+      IP address used for the broadcasting forwarded magic packets (default: "255.255.255.255").
+  known_hosts:
+    name: Known Hosts (sources)
+    description: >-
+      Optional list of known hosts and their aliases. 
+      This list can be used for filtering WoL requests.
+    item:
+      name: Host
+      description: >-
+        Host and friendly name pair. Used for logging/reporting. 
+    fields:
+      host:  
+        name: DNS or source IP
+        description: >-
+          If a DNS name provided, the add-on will resolve the source IP from the hostname.
+      name: 
+        name: friendly name  
+        description: >-
+           friendly name will be used in logging/reporting instead of the source IP
+  host_filtering:
+    name: Host Filter
+    description: >-
+      Only forward WoL packets received from known hosts (default false)
+  mac_list:
+    name: MAC-Alias pairs 
+    description: >-
+      Optional list of known MAC-Alias pairs 
+      - mac: 
+      - name: A friendly name to the targetted device
+    item:
+      name: MAC-Alias pairs
+      description: >-
+        MAC and friendly name pair. Used for logging/reporting. 
+    fields:
+      mac:  
+        name: MAC address
+        description: >-
+          Formatted as MAC-48 address with six groups of two hexadecimal digits, separated by hyphens - or colons (IEEE 802).
+      name: 
+        name: friendly name
+        description: >-
+           A friendly name to the target device
+  mac_filtering:  
+    name: MAC Filter
+    description: >-
+      Only forward WoL packets for known targets defined in mac_list (default false)
+  dns_ttl:
+    name: DNS Time To Leach
+    description: >-
+      DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution.
+  http_api_enabled:
+    name: Enable HTTP Endpoints
+    description: >-
+      Enable HTTP API for status monitoring (default: false).
+  api_port:
+    name: HTTP API port
+    description: >-
+      This setting is obsolete now. Please remove. Use port settng under network instead.
+  webhook_id:
+    name: Webhook for WOL updates
+    description: >-
+      If provided, WoL updates will be posted to Home Assistant.
+      Default an internal URL is used (supervisor API). If that fails, an external url can be defined via ha_api_url
+  webhook_sel:
+    name: Webhook selection
+    description: >-
+      If a Webhook_id is provided, WoL updates will be reported to Home Assistant.
+      Options are all, forward, reject or disabled (no reporting). Default is forward.
+  ha_api_url:
+    name: Home Assistant API url
+    description: >-
+      URL to the Home Assistant API (example: http://homeassistant:8123/api). 
+      Will be used for posting webhooks, in case a webhook_id is provided 
+network:
+  58080/tcp: HTTP port for the status API (default: 58080, range: 1024-65535). Only open to your LAN if required
+  58090/udp: UDP port the add-on listens on for forwarded packets from your router (default: 58090, range: 1024-65535).
