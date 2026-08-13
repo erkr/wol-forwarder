@@ -12,7 +12,6 @@
   "homeassistant_api": true,
   "options": {
     "wol_port": 9,
-    "listen_port": 58090,
     "secure_on": "a1:b2:c3:d4:e5:f6",
     "broadcast_ip": "255.255.255.255",
     "known_hosts": [],
@@ -21,7 +20,6 @@
     "mac_filtering": false,
     "dns_ttl": 300,
     "http_api_enabled": false,
-    "api_port": 58080,
     "webhook_id": ""
   },
   "schema": {
@@ -41,6 +39,14 @@
     "ha_api_url": "url?",
     "log_level": "list(debug|info|warning|error)?"
   },
+	"ports": {
+     "58080/tcp": null,
+     "58090/udp": 58090,
+	},
+	"ports_description": {
+     "58080/tcp": "HTTP_API port",
+     "58090/udp": "WOL listen port",
+	},
   "map": [
     {
       "type": "homeassistant_config",
