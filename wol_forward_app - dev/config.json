@@ -7,7 +7,6 @@
   "url": "https://github.com/erkr/wol-forwarder",
   "startup": "services",
   "boot": "auto",
-  "host_network": true,
   "homeassistant": false,
   "homeassistant_api": true,
   "options": {
