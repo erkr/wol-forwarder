@@ -15,7 +15,7 @@ What WoL Forwarder offers:
 - Your router forwards UDP packets from an arbitrary external port (typically >50000) to this WoL forwarder daemon.
 - The daemon checks whether the incoming UDP packet is a valid WoL packet and validates the SecureOn password.
 - Lists of known sources (hosts) and targets (mac) can be defined and optionally used for filtering
-- Only legimit packets are broadcast on the local network (on wol_port). Here the SecureOn suffix is removed before broadcasting.
+- Only legimit packets are forwarded on the local network (on wol_port). Here the SecureOn suffix is removed before broadcasting.
 - Optional HTTP API for monitoring forwarder status and packet statistics.
 
 There are numerous WoL apps that can send magic packets with a SecureOn password. 
@@ -26,7 +26,7 @@ Note: Home Assistant's WoL integration can also send SecureOn packets.
 1. Install this add-on (add this repository as a custom add-on in Home Assistant Supervisor).
 2. Configure options in the Supervisor add-on UI (or in `/data/options.json`):
    - `wol_port`: UDP port to send magic packets to on the LAN (default: 9)
-   - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
+   - `secure_on`: A string of exactly 6 hex bytes (in MAC format, e.g. "aa:bb:cc:dd:ee:ff") used as SecureOn password
    - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
    - `known_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames for logging/reporting and optionally filtering
       - `host_filtering`: only accept packets whose source IP matches one of the resolved addresses in the known host list
@@ -52,7 +52,6 @@ Note: Two config option moved to `network` settings since `v1.2.0`:
 ## Example default (minimum) config:
 ```
 wol_port: 9
-listen_port: 58090
 secure_on: a1:b2:c3:d4:e5:f6
 broadcast_ip: 255.255.255.255
 known_hosts: []
