@@ -1,4 +1,4 @@
-
+---
 configuration:
   wol_port:
     name: WOL Port
