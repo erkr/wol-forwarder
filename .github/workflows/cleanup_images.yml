@@ -13,7 +13,7 @@ jobs:
       - uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           keep-n-tagged: 5
-          exclude-tags:  dev,v1.0.0
+          exclude-tags:  dev,v1.0.0,v1.1.1,v1.2.0
           delete-untagged: true
           delete-partial-images: true
           #dry-run: true
