@@ -4,8 +4,8 @@
 Security improvement release:
 - The app is no longer fully exposed on your LAN. 
   - Only the listen port for receiving WoL packets.
-	- The HTTP API is not exposed (enable only for testing)
-- Removed the read only mount of the H config folder
+  - The HTTP API is not exposed (enable only for testing)
+- Removed the read only mount of the Home Assistant config folder
 
 breaking:
 - Two config options (api_port and listen_port) moved to network settings  
