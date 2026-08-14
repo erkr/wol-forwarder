@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0
+## v1.2.0 (reverted to v1.1.1 due broadcast issues)
 Security improvement release:
 - The app is no longer fully exposed on your LAN. 
   - Only the listen port for receiving WoL packets.
