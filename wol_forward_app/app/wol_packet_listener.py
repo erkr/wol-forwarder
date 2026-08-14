@@ -25,6 +25,7 @@ class WoLPacketListener:
         host_filtering: bool = False,
         mac_list: Optional[list[dict]] = None,
         mac_filtering: bool = False,
+        http_api_enabled: bool = False,
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
         webhook_id: str = "",
@@ -55,8 +56,9 @@ class WoLPacketListener:
         self.running = False
         self.recv_timeout = recv_timeout
         self.webhook_id = webhook_id
-        self.webhook_forward = (webhook_sel in ["all","forward"]) and webhook_id
-        self.webhook_reject = (webhook_sel in ["all","reject"]) and webhook_id
+        self.webhook_forward = bool((webhook_sel in ["all","forward"]) and webhook_id)
+        self.webhook_reject = bool((webhook_sel in ["all","reject"]) and webhook_id)
+        self.http_api_enabled = http_api_enabled
 
         # allowed hosts and DNS cache
         self.known_hosts = known_hosts or []
@@ -304,6 +306,11 @@ class WoLPacketListener:
             'host_filtering': self.host_filtering,
             'mac_list': self.mac_list,
             'mac_filtering': self.mac_filtering,
+            'http_api_enabled': self.http_api_enabled,
+            'webhook_reporting': {
+               'forwarded': self.webhook_forward,
+               'rejected': self.webhook_reject
+            }
         }
         
     def get_stats(self) -> Dict:

@@ -81,9 +81,9 @@ configuration:
       URL to the Home Assistant API (example: http://homeassistant:8123/api). 
       Will be used for posting webhooks, in case a webhook_id is provided 
 network:
-  58080/tcp: >-
-      The HTTP port for the status API can be used in Home assistant without enabling this setting!
-      Within Home assistant use the app/addon slug (e.g.: http://ab353c6f-wol-forward-app:58080)
-      Only open this for LAN access if really required, as this API runs on a leight weight non-secure webserver!
+  8080/tcp: >-
+      The API HTTP port for the status endpoints. Note it can be used in Home assistant without enabling!
+      Within Home assistant use the app/addon slug (e.g.: http://ab353c6f-wol-forward-app:8080)
+      Only expose this port for LAN access for testing, as this API runs on a very leight weight non-secure webserver!
   58090/udp: >-
-      UDP port on your LAN the app/add-on listens for WOL  packets forwarded from your router (default: 58090, range: 1024-65535).
+      The UDP listen port on your LAN. It is used to receive WOL packets forwarded from your router (default: 58090, range: 1024-65535).

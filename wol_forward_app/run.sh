@@ -9,7 +9,6 @@ if [ -f "$OPTIONS_FILE" ]; then
   LOG_LEVEL=$(jq -r '(.log_level // .options.log_level) // "info"' "$OPTIONS_FILE")
   WOL_PORT=$(jq -r '(.wol_port // .options.wol_port) // 9' "$OPTIONS_FILE")
   BROADCAST_IP=$(jq -r '(.broadcast_ip // .options.broadcast_ip) // "255.255.255.255"' "$OPTIONS_FILE")
-  LISTEN_PORT=$(jq -r '(.listen_port // .options.listen_port) // 58090' "$OPTIONS_FILE")
   SECURE_ON=$(jq -r '(.secure_on // .options.secure_on) // "a1:b2:c3:d4:e5:f6"' "$OPTIONS_FILE")
   KNOWN_HOSTS=$(jq -r '(.known_hosts // .options.known_hosts) // []' "$OPTIONS_FILE")
   HOST_FILTERING=$(jq -r '(.host_filtering // .options.host_filtering) // false' "$OPTIONS_FILE")
@@ -17,27 +16,28 @@ if [ -f "$OPTIONS_FILE" ]; then
   MAC_FILTERING=$(jq -r '(.mac_filtering // .options.mac_filtering) // false' "$OPTIONS_FILE")
   DNS_TTL=$(jq -r '(.dns_ttl // .options.dns_ttl) // 300' "$OPTIONS_FILE")
   HTTP_API_ENABLED=$(jq -r '(.http_api_enabled // .options.http_api_enabled) // false' "$OPTIONS_FILE")
-  API_PORT=$(jq -r '(.api_port // .options.api_port) // 58080' "$OPTIONS_FILE")
   WEBHOOK_ID=$(jq -r '(.webhook_id // .options.webhook_id) // ""' "$OPTIONS_FILE")
   WEBHOOK_SEL=$(jq -r '(.webhook_sel // .options.webhook_sel) // "forward"' "$OPTIONS_FILE")
   HA_API_URL=$(jq -r '(.ha_api_url // .options.ha_api_url) // ""' "$OPTIONS_FILE")
 else
   LOG_LEVEL='info'
   WOL_PORT=9
-  LISTEN_PORT=58090
   SECURE_ON="a1:b2:c3:d4:e5:f6"
   BROADCAST_IP="255.255.255.255"
   KNOWN_HOSTS="[]"
-	HOST_FILTERING=false
+  HOST_FILTERING=false
   MAC_LIST="[]"
   MAC_FILTERING=false
   DNS_TTL=300
   HTTP_API_ENABLED=false
-  API_PORT=58080
   WEBHOOK_ID=""
   HA_API_URL=""
-	WEBHOOK_SEL="forward"
+  WEBHOOK_SEL="forward"
 fi
+
+# internal listen ports, mapped to external LAN ports in network settings (port mapping)
+LISTEN_PORT=58090
+API_PORT=8080
 
 export LOG_LEVEL WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON KNOWN_HOSTS HOST_FILTERING MAC_LIST MAC_FILTERING DNS_TTL HTTP_API_ENABLED API_PORT WEBHOOK_ID WEBHOOK_SEL HA_API_URL
 

@@ -26,7 +26,6 @@ Note: Home Assistant's WOL integration can also send SecureOn packets.
 1. Install this add-on (add this repository as a custom add-on in Home Assistant Supervisor).
 2. Configure options in the Supervisor add-on UI (or in `/data/options.json`):
    - `wol_port`: UDP port to send magic packets to on the LAN (default: 9)
-   - `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
    - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
    - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
    - `known_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames for logging/reporting and optionally filtering
@@ -39,6 +38,17 @@ Note: Home Assistant's WOL integration can also send SecureOn packets.
    - `webhook_id`: When defined, data for forwarded packets will be posted
       - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
       - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
+3. Review the netwerk options:
+   - `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
+   - `api_port`: Don't enable, uless you understand the risks. This API HTTP port for the status endpoints. 
+      Note it can be used safely from Home assistant without enabling this setting (after enabling `http_api_enabled`)!
+      Home assistant should use the internal app/addon slug (e.g.: http://ab353c6f-wol-forward-app:8080)
+      Only expose this port for LAN access for testing, as this API runs on a very leight weight non-secure webserver!
+
+Note: Two config option moved to network senntings since v1.2.0:
+ - api_port
+ - listen_port 
+
 ## Example default (minimum) config:
 ```
 wol_port: 9
@@ -51,7 +61,6 @@ mac_list: []
 mac_filtering: false
 dns_ttl: 300
 http_api_enabled: false
-api_port: 5000
 webhook_id: ''
 ```
 
@@ -59,7 +68,6 @@ webhook_id: ''
 ```
 log_level: warning
 wol_port: 9
-listen_port: 59990
 secure_on: a1:b2:c3:d4:e5:f6
 broadcast_ip: 255.255.255.255
 known_hosts:
@@ -78,7 +86,6 @@ mac_list:
 mac_filtering: true
 dns_ttl: 300
 http_api_enabled: false
-api_port: 5000
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
 webhook_sel: all
@@ -121,6 +128,11 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
     "host_filtering": true,
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
+    "http_api_enabled": true,
+    "webhook_reporting": {
+      "forwarded": true,
+      "rejected": false
+    }
   }
 }
 ```
@@ -203,20 +215,38 @@ triggers:
   - trigger: webhook
     allowed_methods:
       - POST
-      - PUT
     local_only: false
     webhook_id: -ExxxxxxxxxxxxxxxxHs
 conditions: []
 actions:
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.iphone_me
-    data:
-      title: '{{ ''WOL: ''~trigger.json.event}}'
-      message: >-
-        {{'Target '~trigger.json.mac_name~' Waked by
-        '~trigger.json.source_name}}
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.json.event == ''forwarded'' }}'
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.iphone
+            data:
+              title: '{{ ''WOL: ''~trigger.json.event}}'
+              message: >-
+                {{'Target '~trigger.json.mac_name~' Waked by
+                '~trigger.json.source_name}}
+        alias: Forwarded packets
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.json.event == ''rejected'' }}'
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.iphone
+            data:
+              title: '{{ ''WOL: ''~trigger.json.event}}'
+              message: '{{''Rejected ''~trigger.json.message }}'
+        alias: Rejected packets
+
 ```
 Notes:
   - make sure the webhook id used matches with the configured one
@@ -253,12 +283,11 @@ rest:
 
 ## Notes
 
-- Host network mode is required so broadcast packets reach the LAN. This add-on's `config.json` sets `host_network: true`.
 - Make sure your router forwards the external UDP port you choose to the Home Assistant host on `listen_port`.
 - Ensure the target device's NIC supports Wake-on-LAN and that WOL is enabled in firmware/BIOS.
-- The HTTP API is disabled by default for security. Enable only if you need monitoring.
-- API access is restricted to localhost by default. Do not expose the API to untrusted networks.
+- The HTTP API is disabled by default. Enable if you need monitoring.
+- API access is restricted to internal HA docker network by default. Do not expose the API to external networks (except testing).
 
 ## Author
 
-- erkr
+- Erkr
