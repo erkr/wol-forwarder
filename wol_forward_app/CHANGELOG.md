@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.0
+Security improvement release:
+- The app is no longer fully exposed on your LAN. 
+  - Only the listen port for receiving WoL packets.
+	- The HTTP API is not exposed (enable only for testing)
+- Removed the read only mount of the H config folder
+
+breaking:
+- Two config options (api_port and listen_port) moved to network settings  
+
 ## v1.1.1
 Improvements:
 - webhook report options configurable(all, forward, reject, disabled), where the default remains forward events.
