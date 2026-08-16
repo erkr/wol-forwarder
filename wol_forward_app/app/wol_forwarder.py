@@ -35,7 +35,7 @@ MAC_FILTERING = os.environ.get('MAC_FILTERING', 'false').lower() in ('true', '1'
 MAC_LIST = os.environ.get('MAC_LIST', '{}')
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
-API_PORT = int(os.environ.get('API_PORT', 8080))
+API_PORT = int(os.environ.get('API_PORT', 58080))
 WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
 WEBHOOK_SEL = os.environ.get('WEBHOOK_SEL', 'forward')
 
@@ -159,7 +159,7 @@ def main():
 
     # Start HTTP API server if enabled
     if HTTP_API_ENABLED:
-        logger.info("Starting HTTP API server on port %d", API_PORT)
+        logger.info("Starting HTTP API server on port %d. Use it for testing only!", API_PORT)
         api_app = create_api_server(listener)
         api_thread = threading.Thread(
             target=lambda: api_app.run(host='0.0.0.0', port=API_PORT, threaded=True),

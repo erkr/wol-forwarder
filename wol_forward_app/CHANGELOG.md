@@ -1,14 +1,10 @@
 # Changelog
 
-## v1.2.0 (reverted to v1.1.1 due broadcast issues)
-Security improvement release:
-- The app is no longer fully exposed on your LAN. 
-  - Only the listen port for receiving WoL packets.
-  - The HTTP API is not exposed (enable only for testing)
-- Removed the read only mount of the Home Assistant config folder
+## v1.1.2 
 
-breaking:
-- Two config options (api_port and listen_port) moved to network settings  
+Improvements:
+- added missing config options to the endpoint `/config`
+- added statistics for DNS lookups to the endpoint `/dns`
 
 ## v1.1.1
 Improvements:

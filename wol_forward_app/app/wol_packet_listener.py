@@ -80,6 +80,9 @@ class WoLPacketListener:
         self.packets_accepted = 0
         self.packets_rejected = 0
         self.packets_forwarded = 0
+        # DNS lookups
+        self.dns_lookups = 0
+        self.dns_success = 0
 
     def start(self) -> None:
         """Start the listener (blocking until stop() is called)."""
@@ -257,11 +260,13 @@ class WoLPacketListener:
                 entry['last_attempt'] = now
                 try:
                     ips = self._resolve_host(host)
+                    self.dns_lookups += 1
                     if ips:
                         entry['ips'] = ips
                         entry['name'] = name
                         entry['last_success'] = now
                         logger.debug("Resolved %s -> %s (%s)", host, ips, name)
+                        self.dns_success += 1
                     else:
                         # resolution returned empty set; keep previous ips if any
                         if entry['ips']:
@@ -339,6 +344,10 @@ class WoLPacketListener:
                 }
                 for host, entry in self._dns_cache.items()
             },
+            'statistics': {
+                'lookups': self.dns_lookups,
+                'success': self.dns_success,
+           },
         }
 
     def verify_magic_packet(self, packet_data: bytes) -> Dict:

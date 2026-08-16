@@ -1,8 +1,8 @@
 {
   "name": "WoL Forwarder",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "slug": "wol_forward_app",
-  "description": "Wake-on-LAN (WOL) packets with  secureOn forwarding on your LAN.",
+  "description": "Wake-on-LAN (WoL) packets with  secureOn forwarding on your LAN.",
   "arch": ["aarch64", "amd64"],
   "url": "https://github.com/erkr/wol-forwarder#readme",
   "startup": "services",
@@ -19,7 +19,6 @@
     "host_filtering": false,
     "mac_list": [],
     "mac_filtering": false,
-    "dns_ttl": 300,
     "http_api_enabled": false,
     "api_port": 58080,
     "webhook_id": ""
@@ -33,7 +32,7 @@
     "host_filtering": "bool",
     "mac_list": [{"mac": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)", "name":"str"}],
     "mac_filtering": "bool",
-    "dns_ttl": "int(60,3600)",
+    "dns_ttl": "int(60,3600)?",
     "http_api_enabled": "bool",
     "api_port": "int(1024,65535)",
     "webhook_id": "str",
@@ -41,7 +40,7 @@
     "ha_api_url": "url?",
     "log_level": "list(debug|info|warning|error)?"
   },
-  "options_description": "listen_port: UDP port to receive magic packets with secureOn. wol_port: broadcast destination port. secure_on: hex string for secureOn matching. broadcast_ip: destination broadcast IP. known_hosts: list of allowed source IPs. dns_ttl: TTL for DNS responses. http_api_enabled: enable HTTP status API. api_port: port for HTTP API. Webhook_id for reporting forwards",
+  "options_description": "listen_port: input port for WoL packets with secureOn. wol_port: broadcast output port. broadcast_ip: destination broadcast IP. secure_on: hex string for secureOn. known_hosts: list of DNS or source IPs. http_api_enabled: enable HTTP status API. Webhook_id for reporting forwards",
   "image": "ghcr.io/erkr/wol-forwarder",
-  "author": "erkr"
+  "author": "ErKr"
 }

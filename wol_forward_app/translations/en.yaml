@@ -79,7 +79,7 @@ configuration:
       If provided, WoL updates will be posted to Home Assistant.
       Default an internal URL is used (supervisor API). If that fails, an external url can be defined via ha_api_url
   webhook_sel:
-    name: Webhook selection
+    name: Webhook Reporting setting
     description: >-
       If a Webhook_id is provided, WoL updates will be reported to Home Assistant.
       Options are all, forward, reject or disabled (no reporting). Default is forward.

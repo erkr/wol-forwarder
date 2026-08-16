@@ -34,8 +34,8 @@ Note: Home Assistant's WOL integration can also send SecureOn packets.
    - `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
       - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
    - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
-   - `http_api_enabled`: Enable HTTP API for status monitoring (default: false)
-      - `api_port`: HTTP port for the status API (default: 5000)
+   - `http_api_enabled`: Enable HTTP API for status monitoring (default: false). Only for testing!
+      - `api_port`: HTTP port for the status API (default: 58080)
    - `webhook_id`: When defined, data for forwarded packets will be posted
       - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
       - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
@@ -51,7 +51,7 @@ mac_list: []
 mac_filtering: false
 dns_ttl: 300
 http_api_enabled: false
-api_port: 5000
+api_port: 58080
 webhook_id: ''
 ```
 
@@ -78,7 +78,7 @@ mac_list:
 mac_filtering: true
 dns_ttl: 300
 http_api_enabled: false
-api_port: 5000
+api_port: 59080
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
 webhook_sel: all
@@ -87,7 +87,8 @@ webhook_sel: all
 
 To install this third-party add-on:
 
-Open Home Assistant > Settings > Add-ons > Add-on Store.
+Open Home Assistant > Settings > Apps 
+Select `Install Apps` in the right bottom corner.
 Click the menu (three dots in the top-right corner) and select Repositories.
 Paste the GitHub repository link into the field at the bottom:
 ``` 
@@ -97,7 +98,9 @@ Refresh the page if needed. The add-on will appear under `Wake On Lan forward Re
 
 ## HTTP Status API
 
-When `http_api_enabled` is set to `true`, the add-on exposes a REST API for monitoring. The API runs on port `api_port` (default: 5000) on localhost.
+When `http_api_enabled` is set to `true`, the add-on exposes a REST API for monitoring. The API runs on port `api_port` (default: 58080) on localhost.
+The HTTP API is disabled by default for security. Enable only for testing your setup. 
+It's a leightweight web server not suitable for regular use and never to be expose on untrusted networks.
 
 ### API Endpoints
 
@@ -121,6 +124,11 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
     "host_filtering": true,
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
+    "http_api_enabled": true,
+    "webhook_reporting": {
+      "forwarded": true,
+      "rejected": false
+    }
   }
 }
 ```
@@ -138,19 +146,23 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
 
 ```
 {
+  "data": {
     "packets": {
-      "received": 42,
-      "accepted": 40,
-      "rejected": 2,
-      "forwarded": 40
-    }
-}
-```
+      "accepted": 92,
+      "forwarded": 92,
+      "received": 101,
+      "rejected": 9
+    },
+    "running": true
+  },
+  "success": true
+}```
 
 ### DNS Response Example
 
 ```
 {
+  "data": {
     "dns_cache": {
       "sender.example.com": {
         "ips": ["203.0.113.5"],
@@ -159,7 +171,14 @@ When `http_api_enabled` is set to `true`, the add-on exposes a REST API for moni
         "last_success": 1722812735.123,
         "last_attempt": 1722812735.456
       }
+    },
+    "running": true,
+    "statistics": {
+        "lookups": 4607,
+        "success": 4591,
     }
+  },
+  "success": true
 }
 ```
 
@@ -203,62 +222,51 @@ triggers:
   - trigger: webhook
     allowed_methods:
       - POST
-      - PUT
     local_only: false
     webhook_id: -ExxxxxxxxxxxxxxxxHs
 conditions: []
 actions:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.json.event == ''forwarded'' }}'
+        sequence:
   - action: notify.send_message
     metadata: {}
     target:
-      entity_id: notify.iphone_me
+              entity_id: notify.iphone
     data:
       title: '{{ ''WOL: ''~trigger.json.event}}'
       message: >-
         {{'Target '~trigger.json.mac_name~' Waked by
         '~trigger.json.source_name}}
+        alias: Forwarded packets
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.json.event == ''rejected'' }}'
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.iphone
+            data:
+              title: '{{ ''WOL: ''~trigger.json.event}}'
+              message: '{{''Rejected ''~trigger.json.message }}'
+        alias: Rejected packets
+
 ```
 Notes:
   - make sure the webhook id used matches with the configured one
   - Without external HA URL configured, `local_only` must be set to `false` (bug in supervisor proxy, loosing the source IP)
 
         
-#### REST Sensor for Health Check
-
-```yaml
-rest:
-  - resource: http://localhost:58080/health
-    scan_interval: 30
-    sensor:
-      - name: WOL Forwarder Health
-        unique_id: wol_forwarder_health
-        json_attributes:
-          - listening
-        value_template: "{{ value_json.status }}"
-```
-
-#### REST Sensor for Full Stats
-
-```yaml
-rest:
-  - resource: http://localhost:58080/stats
-    scan_interval: 60
-    sensor:
-      - name: WOL Forwarder Stats
-        unique_id: wol_forwarder_stats
-        json_attributes:
-          - data
-        value_template: "{{ 'ok' if value_json.success else 'error' }}"
-```
 
 ## Notes
 
 - Host network mode is required so broadcast packets reach the LAN. This add-on's `config.json` sets `host_network: true`.
 - Make sure your router forwards the external UDP port you choose to the Home Assistant host on `listen_port`.
 - Ensure the target device's NIC supports Wake-on-LAN and that WOL is enabled in firmware/BIOS.
-- The HTTP API is disabled by default for security. Enable only if you need monitoring.
-- API access is restricted to localhost by default. Do not expose the API to untrusted networks.
 
 ## Author
 
-- erkr
+- Erkr
