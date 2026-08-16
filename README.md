@@ -86,11 +86,10 @@ webhook_sel: all
 ## Installation
 
 To install this third-party add-on:
-
-Open Home Assistant > Settings > Apps 
-Select `Install Apps` in the right bottom corner.
-Click the menu (three dots in the top-right corner) and select Repositories.
-Paste the GitHub repository link into the field at the bottom:
+- Open Home Assistant > Settings > Apps.
+- Then select `Install Apps` in the right bottom corner.
+- Click the menu (three dots in the top-right corner) and select Repositories.
+- Paste the GitHub repository link into the field at the bottom: 
 ``` 
 https://github.com/erkr/wol-forwarder
 ``` 
