@@ -1,7 +1,7 @@
 # version 2.4
 # Profile for python:3.11-slim containers
 
-profile wol_forward_app_dev flags=(attach_disconnected, mediate_deleted) {
+profile wol_forward_app flags=(attach_disconnected b, mediate_deleted, complain) {
   
   # 1. Standaard Docker abstracties importeren
   include <abstractions/base>
@@ -9,44 +9,44 @@ profile wol_forward_app_dev flags=(attach_disconnected, mediate_deleted) {
 
   # 2. Netwerkmogelijkheden (aanpassen naar behoefte)
   network inet stream,
-  network inet6 stream,
+  #network inet6 stream,
 
   # 3. Kernel mogelijkheden (Capabilities ontzeggen)
   capability chown,
   capability setuid,
   capability setgid,
-  deny capability sys_admin,
-  deny capability sys_chroot,
-  deny capability ptrace,
+  #deny capability sys_admin,
+  #deny capability sys_chroot,
+  #deny capability ptrace,
 
   # 4. Systeembestanden (Alleen lezen voor Python runtime runtime-omgeving)
-  /bin/** rmix,
-  /usr/bin/** rmix,
-  /usr/local/bin/python3* rmix,
-  /lib/** r,
-  /usr/lib/** r,
-  /usr/local/lib/python3.11/** r,
+  #/bin/** rmix,
+  #/usr/bin/** rmix,
+  #/usr/local/bin/python3* rmix,
+  #/lib/** r,
+  #/usr/lib/** r,
+  #/usr/local/lib/python3.11/** r,
 
   # 5. Essentiële systeempaden voor Python
-  /etc/ld.so.cache r,
-  /etc/localtime r,
-  /etc/timezone r,
-  /dev/urandom r,
-  /dev/random r,
-  /dev/null rw,
-  /dev/zero rw,
+  #/etc/ld.so.cache r,
+  #/etc/localtime r,
+  #/etc/timezone r,
+  #/dev/urandom r,
+  #/dev/random r,
+  #/dev/null rw,
+  #/dev/zero rw,
 
   # 6. Applicatie-specifieke paden (Wijzig '/app' naar jouw WORKDIR)
-  /app/ r,
-  /app/** r,
+  #/app/ r,
+  #/app/** r,
   
   # Geef schrijfrechten waar strikt noodzakelijk (bijv. tijdelijke bestanden)
-  /tmp/ rw,
-  /tmp/** rwk,
+  #/tmp/ rw,
+  #/tmp/** rwk,
 
   # 7. Expliciete blokkades voor gevoelige locaties
-  deny /proc/** w,
-  deny /sys/** w,
-  deny /etc/passwd* w,
-  deny /etc/shadow* w,
+  #deny /proc/** w,
+  #deny /sys/** w,
+  #deny /etc/passwd* w,
+  #deny /etc/shadow* w,
 }
