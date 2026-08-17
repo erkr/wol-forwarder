@@ -109,6 +109,16 @@ It's a leightweight web server not suitable for regular use and never to be expo
 - `GET /stats` — Retrieve Packet statistics 
 - `GET /dns` — Retrieve the current DNS cache 
 
+Those endpoints can easily be queried by adding some shell commands in `config.yaml`:
+``` 
+shell_command:
+# WoL Forward 
+  wol_config: curl -s http://localhost:58080/config | jq "."
+  wol_dns: curl -s http://localhost:58080/dns | jq "."
+  wol_stats: curl -s http://localhost:58080/stats | jq "."
+``` 
+These commands will add actions that can be used in the `Tools->actions` menu
+
 ### Config Response Example
 
 ```json
