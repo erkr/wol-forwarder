@@ -18,8 +18,9 @@ What WOL Forwarder offers:
 - Only legimit packets are broadcast on the local network (on wol_port). Here the SecureOn suffix is removed before broadcasting.
 - Optional HTTP API for monitoring forwarder status and packet statistics.
 
-There are numerous WOL apps that can send magic packets with a SecureOn password. 
-Note: Home Assistant's WOL integration can also send SecureOn packets.
+There are numerous (mobile) WOL apps that can send magic packets with a SecureOn password. 
+In examples there is a WakeOnLan shell script that can be used.
+Home Assistant's native WOL integration can also send SecureOn extended packets.
 
 ## Usage
 
