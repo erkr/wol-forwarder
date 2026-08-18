@@ -2,25 +2,25 @@
 
 # Forward Wake-on-LAN packets on your LAN (App/Add-on)
 
-This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WOL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
+This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
 
 Use case:
-- Enable WOL remotely from the internet in a more secure way.
+- Enable WoL remotely from the internet in a more secure way.
 - Many routers deliberately don't support forwarding broadcasts and only forward to a specific IP/port on the LAN.
-- Broadcasts can be abused for DDoS, so opening the standard WOL ports (7 or 9) on the internet is not ideal.
+- Broadcasts can be abused for DDoS, so opening the standard WoL ports (7 or 9) on the internet is not ideal.
 - Forwarding should only be allowed when the packet is at least authenticated by SecureOn.
 - Optionally filter on sources (hosts) and / or targets (MAC)
 
-What WOL Forwarder offers:
-- Your router forwards UDP packets from an arbitrary external port (typically >50000) to this WOL forwarder daemon.
-- The daemon checks whether the incoming UDP packet is a valid WOL packet and validates the SecureOn password.
+What WoL Forwarder offers:
+- Your router forwards UDP packets from an arbitrary external port (typically >50000) to this WoL forwarder daemon.
+- The daemon checks whether the incoming UDP packet is a valid WoL packet and validates the SecureOn password.
 - Lists of known sources (hosts) and targets (mac) can be defined and optionally used for filtering
 - Only legimit packets are broadcast on the local network (on wol_port). Here the SecureOn suffix is removed before broadcasting.
 - Optional HTTP API for monitoring forwarder status and packet statistics.
 
-There are numerous (mobile) WOL apps that can send magic packets with a SecureOn password. 
+There are numerous (mobile) WoL apps that can send magic packets with a SecureOn password. 
 In examples there is a WakeOnLan shell script that can be used.
-Home Assistant's native WOL integration can also send SecureOn extended packets.
+Home Assistant's native WoL integration can also send SecureOn extended packets.
 
 ## Usage
 
@@ -247,7 +247,7 @@ actions:
     target:
               entity_id: notify.iphone
     data:
-      title: '{{ ''WOL: ''~trigger.json.event}}'
+      title: '{{ ''WoL: ''~trigger.json.event}}'
       message: >-
         {{'Target '~trigger.json.mac_name~' Waked by
         '~trigger.json.source_name}}
@@ -261,7 +261,7 @@ actions:
             target:
               entity_id: notify.iphone
             data:
-              title: '{{ ''WOL: ''~trigger.json.event}}'
+              title: '{{ ''WoL: ''~trigger.json.event}}'
               message: '{{''Rejected ''~trigger.json.message }}'
         alias: Rejected packets
 
@@ -276,7 +276,7 @@ Notes:
 
 - Host network mode is required so broadcast packets reach the LAN. This add-on's `config.json` sets `host_network: true`.
 - Make sure your router forwards the external UDP port you choose to the Home Assistant host on `listen_port`.
-- Ensure the target device's NIC supports Wake-on-LAN and that WOL is enabled in firmware/BIOS.
+- Ensure the target device's NIC supports Wake-on-LAN and that WoL is enabled in firmware/BIOS.
 
 ## Author
 
