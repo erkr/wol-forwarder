@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.0 
+
+Improvements:
+- added AppArmor as an extra security layer
+- added ha_api_url and loglevel to config endpoint data
+- removed http_api_enabled from config endpoint data (redundant info when endpoint can be read)
+- Adjust http API logging (chatty Flask/Werkzeug) to WARNING when selected logger level is INFO
+
 ## v1.1.2 
 
 Improvements:

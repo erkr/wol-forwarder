@@ -25,7 +25,7 @@ class WoLPacketListener:
         host_filtering: bool = False,
         mac_list: Optional[list[dict]] = None,
         mac_filtering: bool = False,
-        http_api_enabled: bool = False,
+        ha_api_url: str = "",
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
         webhook_id: str = "",
@@ -58,7 +58,7 @@ class WoLPacketListener:
         self.webhook_id = webhook_id
         self.webhook_forward = bool((webhook_sel in ["all","forward"]) and webhook_id)
         self.webhook_reject = bool((webhook_sel in ["all","reject"]) and webhook_id)
-        self.http_api_enabled = http_api_enabled
+        self.ha_api_url = ha_api_url
 
         # allowed hosts and DNS cache
         self.known_hosts = known_hosts or []
@@ -303,6 +303,7 @@ class WoLPacketListener:
         """Return current listener config."""
         return {
             'running': self.running,
+            'loglevel': logging.getLevelName(logger.getEffectiveLevel()),
             'listen_address': self.listen_address,
             'listen_port': self.listen_port,
             'wol_port': self.wol_port,
@@ -311,8 +312,8 @@ class WoLPacketListener:
             'host_filtering': self.host_filtering,
             'mac_list': self.mac_list,
             'mac_filtering': self.mac_filtering,
-            'http_api_enabled': self.http_api_enabled,
             'webhook_reporting': {
+               'ha_api_url': self.ha_api_url,
                'forwarded': self.webhook_forward,
                'rejected': self.webhook_reject
             }

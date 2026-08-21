@@ -126,6 +126,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
   "success": true,
   "data": {
     "running": true,
+    "loglevel": "DEBUG",
     "listen_address": "0.0.0.0",
     "listen_port": 58090,
     "wol_port": 9,
@@ -134,8 +135,8 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "host_filtering": true,
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
-    "http_api_enabled": true,
     "webhook_reporting": {
+      "ha_api_url": "",
       "forwarded": true,
       "rejected": false
     }
@@ -195,7 +196,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
 
 ## Webhook (optionally)
 Wol Forwarder can post a webhooks when a valid packet was forwared and/or rejected.
-This requirs `webhook_id` to bedefined and optionally a configured external url (`ha_api_url`).
+This requirs at least `webhook_id` to be defined and optionally an alternative external url (`ha_api_url`).
 Use `webhook_sel` to select what is reported (default reports forwarded packets).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
       only work when the webhook is defined with `local_only=false` (There will be no errors in the app log, as the call returns success!)

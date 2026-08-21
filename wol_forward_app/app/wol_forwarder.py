@@ -38,6 +38,8 @@ HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true
 API_PORT = int(os.environ.get('API_PORT', 58080))
 WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
 WEBHOOK_SEL = os.environ.get('WEBHOOK_SEL', 'forward')
+HA_API_URL = os.environ.get("HA_API_URL", '')
+
 
 # Global references for cleanup
 api_thread: Optional[threading.Thread] = None
@@ -132,7 +134,7 @@ def main():
     # register handler to gracefully close inside dockers
     signal.signal(signal.SIGTERM, sigterm_handler)
     
-    logger.info("WoL Forwarder Starting...")
+    logger.info("WoL Forwarder Starting... LogLevel: %s", LOG_LEVEL)
     if not validate_settings():
         logger.error("Invalid settings passed to WoL Forwarder, Abort...")
         return
@@ -149,7 +151,7 @@ def main():
         secure_on_password=secure_on_password,
         mac_list= json.loads(MAC_LIST),
         mac_filtering=MAC_FILTERING,
-        http_api_enabled=HTTP_API_ENABLED,
+        ha_api_url=HA_API_URL,
         known_hosts=json.loads(KNOWN_HOSTS),
         host_filtering=HOST_FILTERING,
         dns_ttl=DNS_TTL,
@@ -161,6 +163,12 @@ def main():
     if HTTP_API_ENABLED:
         logger.info("Starting HTTP API server on port %d. Use it for testing only!", API_PORT)
         api_app = create_api_server(listener)
+        
+        # Flask is very chatty with INFO loggings for every GET request (show only for debug level)
+        if logger.getEffectiveLevel() == logging.INFO:
+            logger.info("Promote HTTP API LogLevel to Warning")
+            logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
         api_thread = threading.Thread(
             target=lambda: api_app.run(host='0.0.0.0', port=API_PORT, threaded=True),
             daemon=True
