@@ -8,6 +8,9 @@ Improvements:
 - removed http_api_enabled from config endpoint data (redundant info when endpoint can be read)
 - Adjust http API logging (chatty Flask/Werkzeug) to WARNING when selected logger level is INFO
 
+Maintenance:
+- Bumped container base image to python:3.12-slim
+
 ## v1.1.2 
 
 Improvements:
