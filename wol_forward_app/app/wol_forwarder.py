@@ -34,7 +34,7 @@ KNOWN_HOSTS = os.environ.get('KNOWN_HOSTS', '{}')
 MAC_FILTERING = os.environ.get('MAC_FILTERING', 'false').lower() in ('true', '1', 'yes')
 MAC_LIST = os.environ.get('MAC_LIST', '{}')
 DNS_TTL = int(os.environ.get('DNS_TTL', 300))
-HTTP_API_ENABLED = os.environ.get('HTTP_API_ENABLED', 'false').lower() in ('true', '1', 'yes')
+HTTP_API_EXPOSE = os.environ.get('HTTP_API_EXPOSE', 'false').lower() in ('true', '1', 'yes')
 API_PORT = int(os.environ.get('API_PORT', 58080))
 WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
 WEBHOOK_SEL = os.environ.get('WEBHOOK_SEL', 'forward')
@@ -152,6 +152,7 @@ def main():
         mac_list= json.loads(MAC_LIST),
         mac_filtering=MAC_FILTERING,
         ha_api_url=HA_API_URL,
+        http_api_expose=HTTP_API_EXPOSE,
         known_hosts=json.loads(KNOWN_HOSTS),
         host_filtering=HOST_FILTERING,
         dns_ttl=DNS_TTL,
@@ -159,35 +160,32 @@ def main():
         webhook_sel=WEBHOOK_SEL
     )
 
-    # Start HTTP API server if enabled
-    if HTTP_API_ENABLED:
-        logger.info("Starting HTTP API server on port %d. Use it for testing only!", API_PORT)
-        api_app = create_api_server(listener)
-        
-        # Flask is very chatty with INFO loggings for every GET request (show only for debug level)
+    # Start HTTP API server. 
+    api_app = create_api_server(listener)
+    if HTTP_API_EXPOSE: # Expose to Host LAN. Test usage only
+        logger.warning("Starting HTTP API server on port %d. Exposed on Host LAN: for testing only!", API_PORT)
+        HOST = '0.0.0.0'
+    else:  # only for HA (default)
+        logger.info("Starting HTTP API server on port %d on internal network (HA)", API_PORT)
+        HOST = 'localhost'
+        # Flask is very chatty with INFO loggings for every GET request (show only on debug level)
         if logger.getEffectiveLevel() == logging.INFO:
             logger.info("Promote HTTP API LogLevel to Warning")
             logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
-        api_thread = threading.Thread(
-            target=lambda: api_app.run(host='0.0.0.0', port=API_PORT, threaded=True),
+    api_thread = threading.Thread(
+            target=lambda: api_app.run(host=HOST, port=API_PORT, threaded=True),
             daemon=True
-        )
-        api_thread.start()
-    else:
-        logger.debug("HTTP API server is disabled")
-
+    )
+    api_thread.start()
     
     try:
         listener.start()
     except KeyboardInterrupt:
         pass
     finally:
-        if api_app is not None:
-            logger.info("HTTP API server Stopped")
-            # The daemon flag ensures the thread exits when main thread exits
-        # Just to be sure:
-        listener.stop()
+        # The daemon flag ensures the HTTP API thread exits when main thread exits
+        listener.stop() # Just to be sure
         logger.info("WoL Forwarder Stopped.")
 
 

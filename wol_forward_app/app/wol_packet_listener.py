@@ -26,6 +26,7 @@ class WoLPacketListener:
         mac_list: Optional[list[dict]] = None,
         mac_filtering: bool = False,
         ha_api_url: str = "",
+        http_api_expose: bool = False,
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
         webhook_id: str = "",
@@ -59,6 +60,7 @@ class WoLPacketListener:
         self.webhook_forward = bool((webhook_sel in ["all","forward"]) and webhook_id)
         self.webhook_reject = bool((webhook_sel in ["all","reject"]) and webhook_id)
         self.ha_api_url = ha_api_url
+        self.http_api_expose = http_api_expose
 
         # allowed hosts and DNS cache
         self.known_hosts = known_hosts or []
@@ -312,6 +314,7 @@ class WoLPacketListener:
             'host_filtering': self.host_filtering,
             'mac_list': self.mac_list,
             'mac_filtering': self.mac_filtering,
+            'http_api_expose': self.http_api_expose,
             'webhook_reporting': {
                'ha_api_url': self.ha_api_url,
                'forwarded': self.webhook_forward,

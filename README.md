@@ -35,7 +35,7 @@ Home Assistant's native WoL integration can also send SecureOn extended packets.
    - `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
       - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
    - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
-   - `http_api_enabled`: Enable HTTP API for status monitoring (default: false). Only for testing!
+   - `http_api_expose`: Expose HTTP API for status monitoring on the Host network. (default: false, to allow local HA usage only)
       - `api_port`: HTTP port for the status API (default: 58080)
    - `webhook_id`: When defined, data for forwarded packets will be posted
       - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
@@ -51,7 +51,7 @@ host_filtering: false
 mac_list: []
 mac_filtering: false
 dns_ttl: 300
-http_api_enabled: false
+http_api_expose: false
 api_port: 58080
 webhook_id: ''
 ```
@@ -78,7 +78,7 @@ mac_list:
     name: My NAS
 mac_filtering: true
 dns_ttl: 300
-http_api_enabled: false
+http_api_expose: false
 api_port: 59080
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
@@ -98,9 +98,10 @@ Refresh the page if needed. The add-on will appear under `Wake On Lan forward Re
 
 ## HTTP Status API
 
-When `http_api_enabled` is set to `true`, the add-on exposes a REST API for monitoring. The API runs on port `api_port` (default: 58080) on localhost.
-The HTTP API is disabled by default for security. Enable only for testing your setup. 
-It's a leightweight web server not suitable for regular use and never to be expose on untrusted networks.
+When `http_api_expose` is set to `true`, the add-on exposes a REST API for monitoring on the Host LAN network. 
+By default the API runs on the local HA internal network only, on port `api_port` (default: 58080).
+Optionally enable `http_api_expose` when testing your setup, and keep disabled in normal operation
+(it's a leightweight web server not suitable for regular use and shall never to be expose on untrusted networks).
 
 ### API Endpoints
 
@@ -135,6 +136,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "host_filtering": true,
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
+    "http_api_expose": false,
     "webhook_reporting": {
       "ha_api_url": "",
       "forwarded": true,

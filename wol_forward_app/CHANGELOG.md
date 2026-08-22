@@ -3,13 +3,16 @@
 ## v1.2.0 
 
 Improvements:
-- added AppArmor as an extra security layer
-- added ha_api_url and loglevel to config endpoint data
-- removed http_api_enabled from config endpoint data (redundant info when endpoint can be read)
-- Adjust http API logging (chatty Flask/Werkzeug) to WARNING when selected logger level is INFO
+- Security: added AppArmor as an extra protection layer
+- Added parmeters ha_api_url and loglevel to config endpoint data
+
+Changes HTTP Server:
+- Replaced http_api_enabled option by http_api_expose option. 
+- The HTTP server runs always now, but listens to the internal HA network only by default.
+- In normal operation the HTTP API logging (Flask/Werkzeug is chatty on INFO) is adjusted to WARNING when the selected logger level is INFO 
 
 Maintenance:
-- Bumped container base image to python:3.12-slim
+- Updated container base image to python:3.12-slim
 
 ## v1.1.2 
 
