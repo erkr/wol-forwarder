@@ -17,4 +17,4 @@ jobs:
           delete-tags: 1.2.0b1,1.2.0-rc,1.2.0
           delete-untagged: true
           delete-partial-images: true
-          dry-run: true
+          #dry-run: true
