@@ -16,7 +16,7 @@ if [ -f "$OPTIONS_FILE" ]; then
   MAC_LIST=$(jq -r '(.mac_list // .options.mac_list) // []' "$OPTIONS_FILE")
   MAC_FILTERING=$(jq -r '(.mac_filtering // .options.mac_filtering) // false' "$OPTIONS_FILE")
   DNS_TTL=$(jq -r '(.dns_ttl // .options.dns_ttl) // 300' "$OPTIONS_FILE")
-  HTTP_API_ENABLED=$(jq -r '(.http_api_enabled // .options.http_api_enabled) // false' "$OPTIONS_FILE")
+  HTTP_API_EXPOSE=$(jq -r '(.http_api_expose // .options.http_api_expose) // false' "$OPTIONS_FILE")
   API_PORT=$(jq -r '(.api_port // .options.api_port) // 58080' "$OPTIONS_FILE")
   WEBHOOK_ID=$(jq -r '(.webhook_id // .options.webhook_id) // ""' "$OPTIONS_FILE")
   WEBHOOK_SEL=$(jq -r '(.webhook_sel // .options.webhook_sel) // "forward"' "$OPTIONS_FILE")
@@ -32,13 +32,13 @@ else
   MAC_LIST="[]"
   MAC_FILTERING=false
   DNS_TTL=300
-  HTTP_API_ENABLED=false
+  HTTP_API_EXPOSE=false
   API_PORT=58080
   WEBHOOK_ID=""
   HA_API_URL=""
   WEBHOOK_SEL="forward"
 fi
 
-export LOG_LEVEL WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON KNOWN_HOSTS HOST_FILTERING MAC_LIST MAC_FILTERING DNS_TTL HTTP_API_ENABLED API_PORT WEBHOOK_ID WEBHOOK_SEL HA_API_URL
+export LOG_LEVEL WOL_PORT BROADCAST_IP LISTEN_PORT SECURE_ON KNOWN_HOSTS HOST_FILTERING MAC_LIST MAC_FILTERING DNS_TTL HTTP_API_EXPOSE API_PORT WEBHOOK_ID WEBHOOK_SEL HA_API_URL
 
 exec python3 /usr/src/app/app/wol_forwarder.py

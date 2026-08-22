@@ -1,6 +1,8 @@
 ![image](./wol_forward_app/logo.png)
 
 # Forward Wake-on-LAN packets on your LAN (App/Add-on)
+[![GitHub Release][releases-shield]][releases] [![License][license-shield]](./wol_forward_app/LICENSE)
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
 
@@ -35,7 +37,7 @@ Home Assistant's native WoL integration can also send SecureOn extended packets.
    - `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
       - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
    - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
-   - `http_api_enabled`: Enable HTTP API for status monitoring (default: false). Only for testing!
+   - `http_api_expose`: Expose HTTP API for status monitoring on the Host network. (default: false, to allow local HA usage only)
       - `api_port`: HTTP port for the status API (default: 58080)
    - `webhook_id`: When defined, data for forwarded packets will be posted
       - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
@@ -51,7 +53,7 @@ host_filtering: false
 mac_list: []
 mac_filtering: false
 dns_ttl: 300
-http_api_enabled: false
+http_api_expose: false
 api_port: 58080
 webhook_id: ''
 ```
@@ -78,7 +80,7 @@ mac_list:
     name: My NAS
 mac_filtering: true
 dns_ttl: 300
-http_api_enabled: false
+http_api_expose: false
 api_port: 59080
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
@@ -98,9 +100,10 @@ Refresh the page if needed. The add-on will appear under `Wake On Lan forward Re
 
 ## HTTP Status API
 
-When `http_api_enabled` is set to `true`, the add-on exposes a REST API for monitoring. The API runs on port `api_port` (default: 58080) on localhost.
-The HTTP API is disabled by default for security. Enable only for testing your setup. 
-It's a leightweight web server not suitable for regular use and never to be expose on untrusted networks.
+When `http_api_expose` is set to `true`, the add-on exposes a REST API for monitoring on the Host LAN network. 
+By default the API runs on the local HA internal network only, on port `api_port` (default: 58080).
+Optionally enable `http_api_expose` when testing your setup, and keep disabled in normal operation
+(it's a leightweight web server not suitable for regular use and shall never to be expose on untrusted networks).
 
 ### API Endpoints
 
@@ -126,6 +129,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
   "success": true,
   "data": {
     "running": true,
+    "loglevel": "DEBUG",
     "listen_address": "0.0.0.0",
     "listen_port": 58090,
     "wol_port": 9,
@@ -134,8 +138,9 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "host_filtering": true,
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
-    "http_api_enabled": true,
+    "http_api_expose": false,
     "webhook_reporting": {
+      "ha_api_url": "",
       "forwarded": true,
       "rejected": false
     }
@@ -195,7 +200,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
 
 ## Webhook (optionally)
 Wol Forwarder can post a webhooks when a valid packet was forwared and/or rejected.
-This requirs `webhook_id` to bedefined and optionally a configured external url (`ha_api_url`).
+This requirs at least `webhook_id` to be defined and optionally an alternative external url (`ha_api_url`).
 Use `webhook_sel` to select what is reported (default reports forwarded packets).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
       only work when the webhook is defined with `local_only=false` (There will be no errors in the app log, as the call returns success!)
@@ -242,15 +247,16 @@ actions:
           - condition: template
             value_template: '{{ trigger.json.event == ''forwarded'' }}'
         sequence:
-  - action: notify.send_message
-    metadata: {}
-    target:
-              entity_id: notify.iphone
-    data:
-      title: '{{ ''WoL: ''~trigger.json.event}}'
-      message: >-
-        {{'Target '~trigger.json.mac_name~' Waked by
-        '~trigger.json.source_name}}
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.my_iphone
+            data:
+              title: '{{ ''WOL: ''~trigger.json.event}}'
+              message: >-
+                {{'Target '~trigger.json.mac_name~' Waked by
+                '~trigger.json.source_name}}
+            enabled: false
         alias: Forwarded packets
       - conditions:
           - condition: template
@@ -259,11 +265,13 @@ actions:
           - action: notify.send_message
             metadata: {}
             target:
-              entity_id: notify.iphone
+              entity_id: notify.my_iphone
             data:
-              title: '{{ ''WoL: ''~trigger.json.event}}'
+              title: '{{ ''WOL: ''~trigger.json.event}}'
               message: '{{''Rejected ''~trigger.json.message }}'
+            enabled: true
         alias: Rejected packets
+mode: single
 
 ```
 Notes:
@@ -281,3 +289,10 @@ Notes:
 ## Author
 
 - Erkr
+
+[releases-shield]: https://img.shields.io/badge/release-v1.2.0-blue.svg
+[license-shield]: https://img.shields.io/badge/license-MIT-green.svg
+[releases]: https://github.com/erkr/wol-forwarder/releases
+[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
+[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
+

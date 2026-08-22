@@ -1,0 +1,31 @@
+include <tunables/global>
+
+profile ADDON_SLUG flags=(attach_disconnected, mediate_deleted) {
+  include <abstractions/base>
+  include <abstractions/python>
+  include <abstractions/nameservice>
+
+  # Network permissions for Wake-on-LAN broadcast
+  network inet dgram,
+  network inet stream,
+
+  # Allow Python execution
+  /usr/bin/python3* rix,
+  /usr/local/bin/python3* rix,
+  /usr/local/bin/pip* rix,
+  /usr/local/lib/** rix,
+
+
+  # Allow system binaries used by run.sh (netcat, jq, sh, bash)
+  /usr/bin/openbsd-netcat ix,
+  /usr/bin/nc ix,
+  /usr/bin/jq ix,
+  /bin/sh ix,
+  /bin/bash ix,
+
+  # Grant explicit execution rights to WORKDIR
+  /usr/src/app/** rix,
+
+  # Explicit Home Assistant data access rules
+  /data/options.json r,
+}
