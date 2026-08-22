@@ -12,8 +12,9 @@ jobs:
     steps:
       - uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          keep-n-tagged: 5
-          exclude-tags:  dev,v1.0.0,v1.1.1,v1.2.0
+          #keep-n-tagged: 5
+          #exclude-tags:  dev,v1.0.0,v1.1.1,v1.2.0
+          delete-tags: v1.0.2b1,v1.2.0-rc,v1.2.0
           delete-untagged: true
           delete-partial-images: true
-          #dry-run: true
+          dry-run: true
