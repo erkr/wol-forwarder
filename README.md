@@ -1,6 +1,8 @@
 ![image](./wol_forward_app/logo.png)
 
 # Forward Wake-on-LAN packets on your LAN (App/Add-on)
+[![GitHub Release][releases-shield]][releases] [![License][license-shield]](./wol_forward_app/LICENSE)
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
 
@@ -245,15 +247,16 @@ actions:
           - condition: template
             value_template: '{{ trigger.json.event == ''forwarded'' }}'
         sequence:
-  - action: notify.send_message
-    metadata: {}
-    target:
-              entity_id: notify.iphone
-    data:
-      title: '{{ ''WoL: ''~trigger.json.event}}'
-      message: >-
-        {{'Target '~trigger.json.mac_name~' Waked by
-        '~trigger.json.source_name}}
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.my_iphone
+            data:
+              title: '{{ ''WOL: ''~trigger.json.event}}'
+              message: >-
+                {{'Target '~trigger.json.mac_name~' Waked by
+                '~trigger.json.source_name}}
+            enabled: false
         alias: Forwarded packets
       - conditions:
           - condition: template
@@ -262,11 +265,13 @@ actions:
           - action: notify.send_message
             metadata: {}
             target:
-              entity_id: notify.iphone
+              entity_id: notify.my_iphone
             data:
-              title: '{{ ''WoL: ''~trigger.json.event}}'
+              title: '{{ ''WOL: ''~trigger.json.event}}'
               message: '{{''Rejected ''~trigger.json.message }}'
+            enabled: true
         alias: Rejected packets
+mode: single
 
 ```
 Notes:
@@ -284,3 +289,10 @@ Notes:
 ## Author
 
 - Erkr
+
+[releases-shield]: https://img.shields.io/badge/release-v1.2.0-blue.svg
+[license-shield]: https://img.shields.io/badge/license-MIT-green.svg
+[releases]: https://github.com/erkr/wol-forwarder/releases
+[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
+[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
+
