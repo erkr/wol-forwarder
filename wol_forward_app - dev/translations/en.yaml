@@ -65,10 +65,10 @@ configuration:
     name: DNS Time To Leach
     description: >-
       DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution.
-  http_api_enabled:
-    name: Enable HTTP Endpoints
+  http_api_expose:
+    name: Expose HTTP Endpoints
     description: >-
-      Enable HTTP API for status monitoring (default: false).
+      Expose HTTP API for status monitoring on the HOST LAN (default: false, local HA only).
   api_port:
     name: HTTP API port
     description: >-
