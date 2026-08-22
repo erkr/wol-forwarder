@@ -1,6 +1,6 @@
 # Changelog DEV version
 
-## v1.1.3 
+## v1.2.0 
 
 Improvements:
 - added AppArmor (extra security layer)
