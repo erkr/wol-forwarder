@@ -92,7 +92,7 @@ Press this button to automatically add the WoL Forwarder Repro to your Home Assi
 
 If you want to do add the repository manually, please follow the procedure highlighted in the [Home Assistant website](https://www.home-assistant.io/common-tasks/os#installing-a-third-party-app-repository). Use the following URL to add this repository: [https://github.com/erkr/wol-forwarder](https://github.com/erkr/wol-forwarder)
 
-Once this Wol-Forwarder repro is added to your Home Asssitant, Wol-Forwarder can be installed via the app store [Install apps](https://www.home-assistant.io/apps/).
+Once this Wol-Forwarder repro is added to your Home Asssitant, Wol-Forwarder can be installed via the app store: [!["App store on Home Assistant"][app-store-shield]](https://my.home-assistant.io/redirect/supervisor_store/).
 There are two versions:
 - The stable release version (recommended)
 - A dev version (for testing new features)
@@ -290,7 +290,8 @@ Notes:
 - Erkr
 
 [releases-shield]: https://img.shields.io/badge/release-v1.2.0-blue.svg
-[add-repro-shield]: https://img.shields.io/badge/Add_repository_on_Home_Assistant-blue?style=for-the-badge&logo=homeassistant
+[add-repro-shield]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
+[app-store-shield]: https://my.home-assistant.io/badges/supervisor_store.svg
 [license-shield]: https://img.shields.io/badge/license-MIT-green.svg
 [releases]: https://github.com/erkr/wol-forwarder/releases
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg

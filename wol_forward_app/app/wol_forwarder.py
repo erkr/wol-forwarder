@@ -24,6 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+VERSION_TAG = os.environ.get('APP_IMAGE_TAG', 'unknown') # added to image by docker build
 # Defaults (can be overridden by env vars set by run.sh)
 WOL_PORT = int(os.environ.get('WOL_PORT', 9))
 BROADCAST_IP = os.environ.get('BROADCAST_IP', '255.255.255.255')
@@ -134,7 +135,7 @@ def main():
     # register handler to gracefully close inside dockers
     signal.signal(signal.SIGTERM, sigterm_handler)
     
-    logger.info("WoL Forwarder Starting... LogLevel: %s", LOG_LEVEL)
+    logger.info("WoL Forwarder (Version %s, LogLevel=%s) Starting...", VERSION_TAG, LOG_LEVEL)
     if not validate_settings():
         logger.error("Invalid settings passed to WoL Forwarder, Abort...")
         return
