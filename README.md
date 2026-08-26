@@ -92,7 +92,7 @@ Press this button to automatically add the WoL Forwarder Repro to your Home Assi
 
 If you want to do add the repository manually, please follow the procedure highlighted in the [Home Assistant website](https://www.home-assistant.io/common-tasks/os#installing-a-third-party-app-repository) where using the following URL to add this repository: [https://github.com/erkr/wol-forwarder](https://github.com/erkr/wol-forwarder)
 
-Once this Wol-Forwarder repro is added to your Home Asssitant, Wol-Forwarder can be installed via the app store: [!["App store on Home Assistant"][app-store-shield]](https://my.home-assistant.io/redirect/supervisor_store/)
+Once this Wol-Forwarder repro is added to your Home Assistant, Wol-Forwarder can be installed via the app store: [!["App store on Home Assistant"][app-store-shield]](https://my.home-assistant.io/redirect/supervisor_store/)
 
 There are two versions:
 - The stable release version (recommended)
@@ -192,6 +192,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "statistics": {
         "lookups": 4607,
         "success": 4591,
+        "oldest": 0.0
     }
   },
   "success": true
