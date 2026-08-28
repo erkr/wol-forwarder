@@ -85,6 +85,7 @@ class WoLPacketListener:
         # DNS lookups
         self.dns_lookups = 0
         self.dns_success = 0
+        self.dns_age = 0.0
 
     def start(self) -> None:
         """Start the listener (blocking until stop() is called)."""
@@ -241,6 +242,9 @@ class WoLPacketListener:
 
     def _refresh_dns_cache_if_needed(self):
         now = time.time()
+        oldest = 0.0
+        nr_lookups = self.dns_lookups
+
         for known_host in self.known_hosts:
             host = known_host.get('host')
             name = known_host.get('name')
@@ -281,6 +285,13 @@ class WoLPacketListener:
                     else:
                         logger.warning("DNS resolution failed for %s (no previous IPs): %s", host, e)
                 self._dns_cache[host] = entry
+                
+            # update age info
+            oldest = max(now - entry['last_success'], oldest)
+            
+        self.dns_age = oldest
+        if ( self.dns_lookups > nr_lookups):
+            logger.debug("DNS refresh Stats: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)
 
     def _check_known_hosts(self, source_ip: str) -> Dict:
         # allow all when no known_hosts configured
@@ -343,14 +354,15 @@ class WoLPacketListener:
                     'ips': sorted(list(entry.get('ips', set()))),
                     'name': entry.get('name', ''),
                     'resolved': bool(entry.get('ips')),
-                    'last_success': entry.get('last_success', 0),
-                    'last_attempt': entry.get('last_attempt', 0),
+                    'last_success': round(entry.get('last_success', 0),3),
+                    'last_attempt': round(entry.get('last_attempt', 0),3),
                 }
                 for host, entry in self._dns_cache.items()
             },
             'statistics': {
                 'lookups': self.dns_lookups,
                 'success': self.dns_success,
+                'oldest': round(self.dns_age,1),
            },
         }
 

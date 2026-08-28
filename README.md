@@ -1,7 +1,8 @@
 ![image](./wol_forward_app/logo.png)
 
 # Forward Wake-on-LAN packets on your LAN (App/Add-on)
-[![GitHub Release][releases-shield]][releases] [![License][license-shield]](./wol_forward_app/LICENSE)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/release/erkr/wol-forwarder)](https://github.com/erkr/wol-forwarder/releases)
+[![License][license-shield]](./wol_forward_app/LICENSE)
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
@@ -24,25 +25,40 @@ There are numerous (mobile) WoL apps that can send magic packets with a SecureOn
 In examples there is a WakeOnLan shell script that can be used.
 Home Assistant's native WoL integration can also send SecureOn extended packets.
 
-## Usage
 
-1. Install this add-on (add this repository as a custom add-on in Home Assistant Supervisor).
-2. Configure options in the Supervisor add-on UI (or in `/data/options.json`):
-   - `wol_port`: UDP port to send magic packets to on the LAN (default: 9)
-   - `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
-   - `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
-   - `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
-   - `known_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames for logging/reporting and optionally filtering
-      - `host_filtering`: only accept packets whose source IP matches one of the resolved addresses in the known host list
-   - `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
-      - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
-   - `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
-   - `http_api_expose`: Expose HTTP API for status monitoring on the Host network. (default: false, to allow local HA usage only)
-      - `api_port`: HTTP port for the status API (default: 58080)
-   - `webhook_id`: When defined, data for forwarded packets will be posted
-      - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
-      - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
-## Example default (minimum) config:
+## Installation
+
+Install this app (add-on) as a custom app in the Home Assistant Supervisor App Store.
+Press this button to automatically add the WoL Forwarder Repro to your Home Assistant: [!["Add repository on Home Assistant"][add-repro-shield]](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Ferkr%2Fwol-forwarder)
+
+If you want to do add the repository manually, please follow the procedure highlighted in the [Home Assistant website](https://www.home-assistant.io/common-tasks/os#installing-a-third-party-app-repository) where using the following URL to add this repository: [https://github.com/erkr/wol-forwarder](https://github.com/erkr/wol-forwarder)
+
+Once this Wol-Forwarder repro is added to your Home Assistant, Wol-Forwarder can be installed via the App Store: [!["App store on Home Assistant"][app-store-shield]](https://my.home-assistant.io/redirect/supervisor_store/)
+
+There are two versions:
+- The stable release version (recommended)
+- A dev version (used for testing new features)
+
+
+## Configuration
+
+Configure options in the Supervisor add-on UI (or in `/data/options.json`):
+- `wol_port`: UDP port to send magic packets to on the LAN (default: 9)
+- `listen_port`: UDP port the add-on listens on for forwarded packets from your router (default: 58090)
+- `secure_on`: A string of exactly 12 hex characters (6 bytes, e.g. "aabbccddeeff") used as SecureOn password
+- `broadcast_ip`: IP address used for the broadcast (default: "255.255.255.255")
+- `known_hosts`: Optional list of hostnames. If provided, the add-on will resolve these hostnames for logging/reporting and optionally filtering
+    - `host_filtering`: only accept packets whose source IP matches one of the resolved addresses in the known host list
+- `mac_list`: Optional list of know target addresses (mac - name pairs) for logging/reporting and optionally filtering
+    - `mac_filtering`: Use the mac list for packet filtering as well. Only know targets will be forwarded
+- `dns_ttl`: DNS cache TTL in seconds (default: 300). Successful DNS results are refreshed only after this interval. When DNS refresh fails, the add-on keeps the last successful resolution
+- `http_api_expose`: Expose HTTP API for status monitoring on the Host network. (default: false, to allow local HA usage only)
+    - `api_port`: HTTP port for the status API (default: 58080)
+- `webhook_id`: When defined, data for forwarded packets will be posted
+    - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
+    - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
+
+### Example default (minimum) config:
 ```
 wol_port: 9
 listen_port: 58090
@@ -58,7 +74,7 @@ api_port: 58080
 webhook_id: ''
 ```
 
-## Example full config
+### Example full config
 ```
 log_level: warning
 wol_port: 9
@@ -86,16 +102,6 @@ webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
 webhook_sel: all
 ```
-## Installation
-
-Press this button to automatically add the WoL Forwarder Repro to your Home Assistant: [!["Add repository on Home Assistant"][add-repro-shield]](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Ferkr%2Fwol-forwarder)
-
-If you want to do add the repository manually, please follow the procedure highlighted in the [Home Assistant website](https://www.home-assistant.io/common-tasks/os#installing-a-third-party-app-repository). Use the following URL to add this repository: [https://github.com/erkr/wol-forwarder](https://github.com/erkr/wol-forwarder)
-
-Once this Wol-Forwarder repro is added to your Home Asssitant, Wol-Forwarder can be installed via the app store [Install apps](https://www.home-assistant.io/apps/).
-There are two versions:
-- The stable release version (recommended)
-- A dev version (for testing new features)
 
 ## HTTP Status API
 
@@ -191,6 +197,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "statistics": {
         "lookups": 4607,
         "success": 4591,
+        "oldest": 0.0
     }
   },
   "success": true
@@ -225,58 +232,19 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
 
 Note: when host or mac addresses are not known, the adresses and names will be equal.
  
-### Home Assistant Integration Examples
+## Home Assistant Integration Examples
 
-#### Webhook in Automation
-Example of handling webhooks posted by WoL Forwarder. 
-  
-```yaml
-alias: Handle WoL webhook
-description: ''
-triggers:
-  - trigger: webhook
-    allowed_methods:
-      - POST
-    local_only: false
-    webhook_id: -ExxxxxxxxxxxxxxxxHs
-conditions: []
-actions:
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: '{{ trigger.json.event == ''forwarded'' }}'
-        sequence:
-          - action: notify.send_message
-            metadata: {}
-            target:
-              entity_id: notify.my_iphone
-            data:
-              title: '{{ ''WOL: ''~trigger.json.event}}'
-              message: >-
-                {{'Target '~trigger.json.mac_name~' Waked by
-                '~trigger.json.source_name}}
-            enabled: false
-        alias: Forwarded packets
-      - conditions:
-          - condition: template
-            value_template: '{{ trigger.json.event == ''rejected'' }}'
-        sequence:
-          - action: notify.send_message
-            metadata: {}
-            target:
-              entity_id: notify.my_iphone
-            data:
-              title: '{{ ''WOL: ''~trigger.json.event}}'
-              message: '{{''Rejected ''~trigger.json.message }}'
-            enabled: true
-        alias: Rejected packets
-mode: single
+[Automation WebHook handling](./examples/Webhook_automation.yaml): 
+- Handling webhooks posted by WoL Forwarder. 
+- Ensure the webhook id used in the automation matches with the configured one
+- Set `local_only` option of the Webhook to `false` (bug in supervisor proxy, loosing the source IP)
+- Set `allowed_methods` to `POST`
 
-```
-Notes:
-  - make sure the webhook id used matches with the configured one
-  - Without external HA URL configured, `local_only` must be set to `false` (bug in supervisor proxy, loosing the source IP)
+[Rest Sensor Examples](./examples/REST_Sensors.yaml):
+- Add to configuration.yaml
 
+[WakeOnLan Shell Script](./examples/WakeOnLan.sh):
+- Unix Shell script that can be used to Wake On Lan with SecureOn 
         
 
 ## Notes
@@ -287,12 +255,11 @@ Notes:
 
 ## Author
 
-- Erkr
-
-[releases-shield]: https://img.shields.io/badge/release-v1.2.0-blue.svg
-[add-repro-shield]: https://img.shields.io/badge/Add_repository_on_Home_Assistant-blue?style=for-the-badge&logo=homeassistant
+- Eric Kreuwels
+  
+[add-repro-shield]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
+[app-store-shield]: https://my.home-assistant.io/badges/supervisor_store.svg
 [license-shield]: https://img.shields.io/badge/license-MIT-green.svg
-[releases]: https://github.com/erkr/wol-forwarder/releases
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 
