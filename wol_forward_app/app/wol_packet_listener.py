@@ -354,8 +354,8 @@ class WoLPacketListener:
                     'ips': sorted(list(entry.get('ips', set()))),
                     'name': entry.get('name', ''),
                     'resolved': bool(entry.get('ips')),
-                    'last_success': entry.get('last_success', 0),
-                    'last_attempt': entry.get('last_attempt', 0),
+                    'last_success': round(entry.get('last_success', 0),3),
+                    'last_attempt': round(entry.get('last_attempt', 0),3),
                 }
                 for host, entry in self._dns_cache.items()
             },

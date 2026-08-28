@@ -1,0 +1,36 @@
+# Rest sensor examples for WoL Forwarder
+rest:
+  - resource: http://localhost:58080/stats
+    scan_interval: 60
+    sensor:
+      - name: WOL Forwarder Stats
+        unique_id: wol_forwarder_stats
+        json_attributes_path: 'data'
+        json_attributes:
+          - packets
+        value_template: |
+          {% if value_json.success %}
+            {{ 'Ok' if value_json.data.running else 'Stopped' }}
+          {% else %}
+            Error
+          {% endif %}
+  - resource: http://localhost:58080/dns
+    scan_interval: 60
+    sensor:
+      - name: WOL Forwarder DNS
+        unique_id: wol_forwarder_dns
+        json_attributes_path: 'data'
+        json_attributes:
+          - statistics
+        value_template: |
+          {% if value_json.success %}
+            {% if not value_json.data.running %}
+              Stopped
+            {% elif value_json.data.statistics.oldest > 600 %}
+              Old entries
+            {% else %}
+              Ok
+            {% endif %}
+          {% else %}
+            Error
+          {% endif %}
