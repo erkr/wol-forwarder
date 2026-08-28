@@ -230,7 +230,8 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
 }
 ```
 
-Note: when host or mac addresses are not known, the adresses and names will be equal.
+Note 1: when host or mac addresses are not known, the adresses and names will be equal.
+Note 2: see examples how to use webhooks for sensors and/or automation
  
 ## Home Assistant Integration Examples
 
@@ -240,8 +241,19 @@ Note: when host or mac addresses are not known, the adresses and names will be e
 - Set `local_only` option of the Webhook to `false` (bug in supervisor proxy, loosing the source IP)
 - Set `allowed_methods` to `POST`
 
+[Webhook template trigger sensors](./examples/Webhook_trigger_sensors.yaml)
+- Add to configuration.yaml
+- counters that update instantly and don't reset when the WoL App restarts 
+
+[Shell Command](./examples/Shell_commands.yaml)
+- Add to configuration.yaml
+- Adds actions that can be used to query WoL forwarder in dev tools or Automations/Scripts
+
 [Rest Sensor Examples](./examples/REST_Sensors.yaml):
 - Add to configuration.yaml
+- Consider webhook triggered template sensors if your just need forwarded and rejected counters 
+- Restful sensors are polling based (delayed updates)
+- Will spam the log with connection errors if the WoL App can't be reached.
 
 [WakeOnLan Shell Script](./examples/WakeOnLan.sh):
 - Unix Shell script that can be used to Wake On Lan with SecureOn 

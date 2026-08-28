@@ -1,19 +1,29 @@
 # Rest sensor examples for WoL Forwarder
+# Note: rest sensors spam the log with connection 
+#       errors if the app is not running 
 rest:
+  # Note: consider using template trigger sensors   
   - resource: http://localhost:58080/stats
-    scan_interval: 60
     sensor:
       - name: WOL Forwarder Stats
         unique_id: wol_forwarder_stats
         json_attributes_path: 'data'
         json_attributes:
           - packets
+        availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
         value_template: |
-          {% if value_json.success %}
-            {{ 'Ok' if value_json.data.running else 'Stopped' }}
-          {% else %}
-            Error
-          {% endif %}
+            {{ 'Ok' if value_json.data.running 
+               else 'Stopped' }}
+      - name: WOL Forwarder Accepted
+        # This counter resets every time the app restarts
+        unique_id: wol_forwarder_accepted
+        availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
+        value_template: "{{ value_json.data.packets.accepted }}"
+      - name: WOL Forwarder Rejected
+        # This counter resets every time the app restarts
+        unique_id: wol_forwarder_rejected
+        availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
+        value_template: "{{ value_json.data.packets.rejected }}"
   - resource: http://localhost:58080/dns
     scan_interval: 60
     sensor:
@@ -22,15 +32,12 @@ rest:
         json_attributes_path: 'data'
         json_attributes:
           - statistics
+        availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
         value_template: |
-          {% if value_json.success %}
-            {% if not value_json.data.running %}
-              Stopped
-            {% elif value_json.data.statistics.oldest > 600 %}
-              Old entries
-            {% else %}
+            {% if value_json.data.statistics.oldest > 600 %}
+              Outdated
+            {% elif value_json.data.running %}
               Ok
+            {% else %}
+              Stopped 
             {% endif %}
-          {% else %}
-            Error
-          {% endif %}

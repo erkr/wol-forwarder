@@ -1,0 +1,5 @@
+shell_command:
+# query WoL Forward HTTP endpoints with these actions
+  wol_config: curl -s http://localhost:58080/config | jq "."
+  wol_dns: curl -s http://localhost:58080/dns | jq "."
+  wol_stats: curl -s http://localhost:58080/stats | jq "."
