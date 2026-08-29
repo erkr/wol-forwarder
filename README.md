@@ -19,7 +19,7 @@ What WoL Forwarder offers:
 - The daemon checks whether the incoming UDP packet is a valid WoL packet and validates the SecureOn password.
 - Lists of known sources (hosts) and targets (mac) can be defined and optionally used for filtering
 - Only legimit packets are broadcast on the local network (on wol_port). Here the SecureOn suffix is removed before broadcasting.
-- Optional HTTP API for monitoring forwarder status and packet statistics.
+- Webhook Posts and a HTTP API for monitoring forwarder status and packet statistics.
 
 There are numerous (mobile) WoL apps that can send magic packets with a SecureOn password. 
 In examples there is a WakeOnLan shell script that can be used.
