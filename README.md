@@ -169,9 +169,13 @@ These commands will add actions that can be used in the `Tools->actions` menu
   "data": {
     "packets": {
       "accepted": 92,
-      "forwarded": 92,
-      "received": 101,
-      "rejected": 9
+      "rejected": 9,
+      "failed": 1,
+    },
+    "dns": {
+        "lookups": 4607,
+        "success": 4591,
+        "oldest": 0.0
     },
     "running": true
   },
@@ -207,9 +211,19 @@ These commands will add actions that can be used in the `Tools->actions` menu
 ## Webhook (optionally)
 Wol Forwarder can post a webhooks when a valid packet was forwared and/or rejected.
 This requirs at least `webhook_id` to be defined and optionally an alternative external url (`ha_api_url`).
-Use `webhook_sel` to select what is reported (default reports forwarded packets).
+Use `webhook_sel` to select what is reported (default reports forwarded packets,`started` gets posted always).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
       only work when the webhook is defined with `local_only=false` (There will be no errors in the app log, as the call returns success!)
+
+WebHook 'started' posts contain this JSON payload data:
+```
+{
+   "event":"started", 
+   "rejected": number,
+   "accepted": number
+}
+```
+
 WebHook 'forwarded' posts contain JSON payload data with additional soruce and target info:
 ```
 {
@@ -217,7 +231,9 @@ WebHook 'forwarded' posts contain JSON payload data with additional soruce and t
    "source_ip": source_ip, 
    "source_name": source_name, 
    "mac_address": mac_address, 
-   "mac_name": mac_name 
+   "mac_name": mac_name,
+   "rejected": number,
+   "accepted": number
 }
 ```
 WebHook 'rejected' posts contain JSON payload data with the reason of rejection:

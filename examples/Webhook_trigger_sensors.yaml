@@ -1,7 +1,6 @@
 template:
   
-  # First exanple for generic WoL event and counting sensors
-  # The template counters won't reset after restarting the App
+  # First example for generic WoL event and counting sensors
   - trigger:
     - platform: webhook
       allowed_methods:
@@ -13,25 +12,42 @@ template:
          and trigger.json.event is defined 
       }}
     sensor:
-    - name: WoL forwarded
+    # These template counters won't reset after restarting the App
+    - name: WoL forwarded total increasing
       state: |
         {% set current = this.state | int(0) %}
         {{ current+1 if trigger.json.event=='forwarded' else current }}
       state_class: total_increasing
-    - name: WoL rejected
+    - name: WoL rejected total increasing
       state: |
         {% set current = this.state | int(0) %}
         {{ current+1 if trigger.json.event=='rejected' else current }}
       state_class: total_increasing
+    # These template counters reflect the app counters (like the rest sensors, but update instantly)
+    # So these counters reset after restarting the App
+    - name: WoL forwarded total
+      state: |
+        {{ trigger.json.accepted 
+           if trigger.json.accepted is defined 
+           else this.state|int(0) }}
+      state_class: total
+    - name: WoL rejected total
+      state: |
+        {{ trigger.json.rejected 
+           if trigger.json.rejected is defined 
+           else this.state|int(0)}}
+      state_class: total
+    # Generic recoding of accepted and rejected WOL events
     event:
     - name: WoL event
       event_type: "{{ trigger.json.event }}"
-      event_types: "{{ ['forwarded', 'rejected'] }}"
+      event_types: "{{ ['forwarded', 'rejected', 'started'] }}"
       device_class: button
       attributes:
         data: "{{ dict(trigger.json.items() | rejectattr('0', 'eq', 'event')) | to_json }}"
 
-  # Second example provides a target specific event and sensor: 
+  # Second example provides a target specific event and sensor 
+  # Note: one trigger block with the MAC address per target required: 
   - trigger:
     - platform: webhook
       allowed_methods:
@@ -45,9 +61,11 @@ template:
          and trigger.json.mac_address== 'EE:43:FF:AA:78:6A'
       }}
     sensor:
+    # Target counter that won't reset after restarting the App
     - name: Waked NAS
       state:  "{{ this.state | int(0) + 1 }}"
       state_class: total_increasing
+    # Recoding Target specific accepted and rejected WOL events
     event:
     - name: Wake NAS
       event_type: "{{ trigger.json.event }}"

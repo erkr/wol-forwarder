@@ -11,6 +11,18 @@ actions:
   - choose:
       - conditions:
           - condition: template
+            value_template: '{{ trigger.json.event == ''started'' }}'
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.my_iphone
+            data:
+              title: 'WOL: Started'
+              message: The WoL Forwarder App (re)started
+        alias: Restarted
+      - conditions:
+          - condition: template
             value_template: '{{ trigger.json.event == ''forwarded'' }}'
         sequence:
           - action: notify.send_message
@@ -22,7 +34,6 @@ actions:
               message: >-
                 {{'Target '~trigger.json.mac_name~' Waked by
                 '~trigger.json.source_name}}
-            enabled: false
         alias: Forwarded packets
       - conditions:
           - condition: template
@@ -35,7 +46,6 @@ actions:
             data:
               title: '{{ ''WOL: ''~trigger.json.event}}'
               message: '{{''Rejected ''~trigger.json.message }}'
-            enabled: true
-        alias: Rejected packets
+         alias: Rejected packets
 mode: single
 

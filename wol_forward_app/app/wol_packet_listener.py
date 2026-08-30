@@ -78,10 +78,9 @@ class WoLPacketListener:
         self.mac_list = mac_list or []
         self.mac_filtering = mac_filtering
         # Packet statistics (thread-safe counters)
-        self.packets_received = 0
         self.packets_accepted = 0
         self.packets_rejected = 0
-        self.packets_forwarded = 0
+        self.packets_failed = 0
         # DNS lookups
         self.dns_lookups = 0
         self.dns_success = 0
@@ -134,13 +133,13 @@ class WoLPacketListener:
     def listen(self) -> None:
         """Main loop: receive packets and process them."""
         try:
+            send_ha_webhook(self.webhook_id, {"event":"started", "rejected": self.packets_rejected, "accepted": self.packets_accepted})
             while self.running:
                 try:
                     if self.known_hosts:  # Ensure cache is frequently refreshed 
                         self._refresh_dns_cache_if_needed()
                     if self.running:
                         data, addr = self.socket.recvfrom(1024)
-                        self.packets_received += 1
                     if self.running:
                         self.process_packet(data, addr)
                 except socket.timeout:
@@ -210,7 +209,7 @@ class WoLPacketListener:
         self.packets_accepted += 1
         logger.info("Valid WoL packet for Target %s received from %s", mac_name, source_name)
         if self.webhook_forward:
-            send_ha_webhook(self.webhook_id, {"event":"forwarded", "source_ip": source_ip, "source_name": source_name, "mac_address": mac_address, "mac_name": mac_name })
+            send_ha_webhook(self.webhook_id, {"event":"forwarded", "source_ip": source_ip, "source_name": source_name, "mac_address": mac_address, "mac_name": mac_name, "rejected": self.packets_rejected, "accepted": self.packets_accepted })
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     
@@ -220,9 +219,9 @@ class WoLPacketListener:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             sock.sendto(magic_packet, (self.broadcast_ip, self.wol_port))
-            self.packets_forwarded += 1
             logger.debug("Sent magic packet (%d bytes) to %s:%d", len(magic_packet), self.broadcast_ip, self.wol_port)
         except Exception:
+            self.packets_failed += 1
             logger.exception("Failed to send magic packet to %s:%d", self.broadcast_ip, self.wol_port)
         finally:
             try:
@@ -338,11 +337,15 @@ class WoLPacketListener:
         return {
             'running': self.running,
             'packets': {
-                'received': self.packets_received,
                 'accepted': self.packets_accepted,
                 'rejected': self.packets_rejected,
-                'forwarded': self.packets_forwarded,
+                'failed': self.packets_failed,
             },
+            'dns': {
+                'lookups': self.dns_lookups,
+                'success': self.dns_success,
+                'oldest': round(self.dns_age,1),
+           },
         }
 
     def get_dns_cache(self) -> Dict:

@@ -1,12 +1,12 @@
 # Changelog DEV version
 
-## v1.2.1 
+## v1.2.2 
 
 Improvements:
-- Version tag passed to image and logged while starting
-- Revised installation instructions in the readme using standard badges and redirects
-- Added oldest successfull lookup to DNS statistics
-- Added examples
+- Added `accepted` and `rejected` counters to `forwarded` webhook payload (to facilitate webhook based template sensors)
+- Added DNS statistics to `stats` endpoint
+- Added a started Webhook (Posts always when a Webhook ID is configured)
 
 Breaking:
-- None
+- Small change in `stats` endpoint; removed `received` packets counter and replaced `forwarded` counter by a `failed` counter 
+
