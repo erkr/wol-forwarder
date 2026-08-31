@@ -142,11 +142,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
     "http_api_expose": false,
-    "webhook_reporting": {
-      "ha_api_url": "",
-      "forwarded": true,
-      "rejected": false
-    }
+    "ha_api_url": "",
   }
 }
 ```

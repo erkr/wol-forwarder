@@ -46,6 +46,6 @@ actions:
             data:
               title: '{{ ''WOL: ''~trigger.json.event}}'
               message: '{{''Rejected ''~trigger.json.message }}'
-         alias: Rejected packets
+        alias: Rejected packets
 mode: single
 

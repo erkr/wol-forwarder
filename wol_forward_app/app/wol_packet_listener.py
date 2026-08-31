@@ -355,11 +355,7 @@ class WoLPacketListener:
             'mac_list': self.mac_list,
             'mac_filtering': self.mac_filtering,
             'http_api_expose': self.http_api_expose,
-            'webhook_reporting': {
-               'ha_api_url': self.ha_api_url,
-               'forwarded': self.webhook_forward,
-               'rejected': self.webhook_reject
-            }
+            'ha_api_url': self.ha_api_url,
         }
         
     def get_stats(self) -> Dict:
