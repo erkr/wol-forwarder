@@ -56,7 +56,6 @@ Configure options in the Supervisor add-on UI (or in `/data/options.json`):
     - `api_port`: HTTP port for the status API (default: 58080)
 - `webhook_id`: When defined, data for forwarded packets will be posted
     - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
-    - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
 
 ### Example default (minimum) config:
 ```
@@ -100,7 +99,6 @@ http_api_expose: false
 api_port: 59080
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
-webhook_sel: all
 ```
 
 ## HTTP Status API
@@ -176,6 +174,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
         "lookups": 4607,
         "success": 4591,
         "oldest": 0.0
+        "healthy": true,
     },
     "running": true
   },
@@ -201,7 +200,8 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "statistics": {
         "lookups": 4607,
         "success": 4591,
-        "oldest": 0.0
+        "oldest": 0.0,
+        "healthy": true,
     }
   },
   "success": true
@@ -209,18 +209,20 @@ These commands will add actions that can be used in the `Tools->actions` menu
 ```
 
 ## Webhook (optionally)
-Wol Forwarder can post a webhooks when a valid packet was forwared and/or rejected.
+Wol Forwarder can post webhooks when a valid packet where forwared and/or rejected or issues occured.
 This requirs at least `webhook_id` to be defined and optionally an alternative external url (`ha_api_url`).
-Use `webhook_sel` to select what is reported (default reports forwarded packets,`started` gets posted always).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
       only work when the webhook is defined with `local_only=false` (There will be no errors in the app log, as the call returns success!)
 
-WebHook 'started' posts contain this JSON payload data:
+WebHook 'statistics' posts contain this JSON payload data:
 ```
 {
-   "event":"started", 
+   "event":"statistics", 
+   "message": "reason", 
    "rejected": number,
-   "accepted": number
+   "accepted": number,
+   "failed": number,
+   "dns_healthy": bool,
 }
 ```
 
@@ -233,7 +235,9 @@ WebHook 'forwarded' posts contain JSON payload data with additional soruce and t
    "mac_address": mac_address, 
    "mac_name": mac_name,
    "rejected": number,
-   "accepted": number
+   "accepted": number,
+   "failed": number,
+   "dns_healthy": bool,
 }
 ```
 WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
@@ -242,7 +246,9 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
    "event":"rejected", 
    "message": "reason", 
    "rejected": number,
-   "accepted": number
+   "accepted": number,
+   "failed": number,
+   "dns_healthy": bool,
 }
 ```
 

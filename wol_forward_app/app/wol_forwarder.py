@@ -38,7 +38,6 @@ DNS_TTL = int(os.environ.get('DNS_TTL', 300))
 HTTP_API_EXPOSE = os.environ.get('HTTP_API_EXPOSE', 'false').lower() in ('true', '1', 'yes')
 API_PORT = int(os.environ.get('API_PORT', 58080))
 WEBHOOK_ID = os.environ.get('WEBHOOK_ID', '')
-WEBHOOK_SEL = os.environ.get('WEBHOOK_SEL', 'forward')
 HA_API_URL = os.environ.get("HA_API_URL", '')
 
 
@@ -158,7 +157,6 @@ def main():
         host_filtering=HOST_FILTERING,
         dns_ttl=DNS_TTL,
         webhook_id=WEBHOOK_ID,
-        webhook_sel=WEBHOOK_SEL
     )
 
     # Start HTTP API server. 

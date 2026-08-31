@@ -3,10 +3,13 @@
 ## v1.2.2 
 
 Improvements:
-- Added `accepted` and `rejected` counters to `forwarded` webhook payload (to facilitate webhook based template sensors)
-- Added DNS statistics to `stats` endpoint
-- Added a started Webhook (Posts always when a Webhook ID is configured)
+- Extended statistics with WoL packet forward failed count and a DNS Healthy flag
+- Added basic statistics to `forwarded` webhook payload, equal to `rejected` (to facilitate webhook based template sensors)
+- Added a `statistics` Webhook (Posts when started or issues occured)
 
 Breaking:
-- Small change in `stats` endpoint; removed `received` packets counter and replaced `forwarded` counter by a `failed` counter 
+- Changed `stats` endpoint; 
+   - removed `received` packets counter 
+   - replaced `forwarded` counter by a `failed` counter 
+- Config option `webhook_sel` is removed. If `webhook_id` is configured all events are reported
 

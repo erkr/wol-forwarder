@@ -37,16 +37,22 @@ template:
            if trigger.json.rejected is defined 
            else this.state|int(0)}}
       state_class: total
-    # Generic recoding of accepted and rejected WOL events
+    - name: WoL failed total
+      state: |
+        {{ trigger.json.failed 
+           if trigger.json.failed is defined 
+           else this.state|int(0)}}
+      state_class: total
+    # Generic recording of accepted and rejected WOL events
     event:
     - name: WoL event
       event_type: "{{ trigger.json.event }}"
-      event_types: "{{ ['forwarded', 'rejected', 'started'] }}"
+      event_types: "{{ ['forwarded', 'rejected', 'statistics'] }}"
       device_class: button
       attributes:
         data: "{{ dict(trigger.json.items() | rejectattr('0', 'eq', 'event')) | to_json }}"
 
-  # Second example provides a target specific event and sensor 
+  # Second example provides a target specific event and counting sensor 
   # Note: one trigger block with the MAC address per target required: 
   - trigger:
     - platform: webhook

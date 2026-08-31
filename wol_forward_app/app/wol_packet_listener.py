@@ -29,8 +29,7 @@ class WoLPacketListener:
         http_api_expose: bool = False,
         dns_ttl: int = 300,
         recv_timeout: float = 1.0,
-        webhook_id: str = "",
-        webhook_sel: str = "forward"
+        webhook_id: str = ""
     ):
         """
         Initialize the WoL packet listener.
@@ -57,8 +56,6 @@ class WoLPacketListener:
         self.running = False
         self.recv_timeout = recv_timeout
         self.webhook_id = webhook_id
-        self.webhook_forward = bool((webhook_sel in ["all","forward"]) and webhook_id)
-        self.webhook_reject = bool((webhook_sel in ["all","reject"]) and webhook_id)
         self.ha_api_url = ha_api_url
         self.http_api_expose = http_api_expose
 
@@ -84,7 +81,8 @@ class WoLPacketListener:
         # DNS lookups
         self.dns_lookups = 0
         self.dns_success = 0
-        self.dns_age = 0.0
+        self.dns_age = 0.0 # age of oldest successful DNS lookup
+        self.dns_healthy = True  # becomes false if age exceeds dns_ttl twice 
 
     def start(self) -> None:
         """Start the listener (blocking until stop() is called)."""
@@ -133,7 +131,12 @@ class WoLPacketListener:
     def listen(self) -> None:
         """Main loop: receive packets and process them."""
         try:
-            send_ha_webhook(self.webhook_id, {"event":"started", "rejected": self.packets_rejected, "accepted": self.packets_accepted})
+            send_ha_webhook(self.webhook_id, {"event":"statistics", 
+                                              "message": "Startup WoL Forward",
+                                              "rejected": self.packets_rejected, 
+                                              "accepted": self.packets_accepted, 
+                                              "failed": self.packets_failed,
+                                              "dns_healthy": self.dns_healthy})
             while self.running:
                 try:
                     if self.known_hosts:  # Ensure cache is frequently refreshed 
@@ -171,8 +174,11 @@ class WoLPacketListener:
             msg = f"Dropping packet from {source_ip}:{source_port} — source not allowed"
             logger.warning(msg)
             self.packets_rejected += 1
-            if self.webhook_reject:
-                send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, "rejected": self.packets_rejected, "accepted": self.packets_accepted})
+            send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, 
+                                              "rejected": self.packets_rejected, 
+                                              "accepted": self.packets_accepted, 
+                                              "failed": self.packets_failed,
+                                              "dns_healthy": self.dns_healthy})
             return
         source_name=result.get("name", source_ip)
         
@@ -183,8 +189,11 @@ class WoLPacketListener:
             msg = f"Invalid WOL packet from {source_ip}:{source_port} - {error}"
             logger.warning(msg)
             self.packets_rejected += 1
-            if self.webhook_reject:
-                send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, "rejected": self.packets_rejected, "accepted": self.packets_accepted})
+            send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, 
+                                              "rejected": self.packets_rejected, 
+                                              "accepted": self.packets_accepted, 
+                                              "failed": self.packets_failed,
+                                              "dns_healthy": self.dns_healthy})
             return
         mac_address = result.get('mac','Unknown')
         
@@ -201,15 +210,23 @@ class WoLPacketListener:
                 msg = f"WOL packet reject - MAC {mac_address} not in allowed mac list"
                 logger.warning(msg)
                 self.packets_rejected += 1
-                if self.webhook_reject:
-                   send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, "rejected": self.packets_rejected, "accepted": self.packets_accepted})
+                send_ha_webhook(self.webhook_id, {"event":"rejected", "message": msg, 
+                                                  "rejected": self.packets_rejected, 
+                                                  "accepted": self.packets_accepted, 
+                                                  "failed": self.packets_failed,
+                                                  "dns_healthy": self.dns_healthy})
                 return
             
         # Log successful packet
         self.packets_accepted += 1
         logger.info("Valid WoL packet for Target %s received from %s", mac_name, source_name)
-        if self.webhook_forward:
-            send_ha_webhook(self.webhook_id, {"event":"forwarded", "source_ip": source_ip, "source_name": source_name, "mac_address": mac_address, "mac_name": mac_name, "rejected": self.packets_rejected, "accepted": self.packets_accepted })
+        send_ha_webhook(self.webhook_id, {"event":"forwarded", 
+                                          "source_ip": source_ip, "source_name": source_name, 
+                                          "mac_address": mac_address, "mac_name": mac_name, 
+                                          "rejected": self.packets_rejected, 
+                                          "accepted": self.packets_accepted, 
+                                          "failed": self.packets_failed,
+                                          "dns_healthy": self.dns_healthy})
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
     
@@ -289,9 +306,22 @@ class WoLPacketListener:
             oldest = max(now - entry['last_success'], oldest)
             
         self.dns_age = oldest
-        if ( self.dns_lookups > nr_lookups):
+        healthy = bool(oldest < self.dns_ttl * 2)  # false if age exceeds dns_ttl twice 
+        if (self.dns_healthy != healthy): # only register changes in health
+            self.dns_healthy = healthy  
+            if ( not healthy ):
+                logger.error("DNS outdated: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)
+            else:
+                logger.info("DNS refreshed: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)          
+            send_ha_webhook(self.webhook_id, {"event":"statistics", 
+                                              "message": "DNS Health changed",
+                                              "rejected": self.packets_rejected, 
+                                              "accepted": self.packets_accepted, 
+                                              "failed": self.packets_failed,
+                                              "dns_healthy": self.dns_healthy})
+        elif ( self.dns_lookups > nr_lookups):
             logger.debug("DNS refresh Stats: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)
-
+         
     def _check_known_hosts(self, source_ip: str) -> Dict:
         # allow all when no known_hosts configured
         if not self.known_hosts:
@@ -345,6 +375,7 @@ class WoLPacketListener:
                 'lookups': self.dns_lookups,
                 'success': self.dns_success,
                 'oldest': round(self.dns_age,1),
+                'healthy': self.dns_healthy,
            },
         }
 
@@ -366,6 +397,7 @@ class WoLPacketListener:
                 'lookups': self.dns_lookups,
                 'success': self.dns_success,
                 'oldest': round(self.dns_age,1),
+                'healthy': self.dns_healthy,
            },
         }
 

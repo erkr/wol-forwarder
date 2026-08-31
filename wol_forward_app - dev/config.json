@@ -36,7 +36,6 @@
     "http_api_expose": "bool?",
     "api_port": "int(1024,65535)",
     "webhook_id": "str",
-    "webhook_sel": "list(all|forward|reject|disabled)?",
     "ha_api_url": "url?",
     "log_level": "list(debug|info|warning|error)?"
   },
