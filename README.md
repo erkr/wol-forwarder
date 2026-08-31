@@ -112,7 +112,7 @@ Optionally enable `http_api_expose` when testing your setup, and keep disabled i
 
 - `GET /config` — Retrieve the configuration passed to the app.
 - `GET /health` — Quick health check (HTTP 200 if running, 503 if stopped)
-- `GET /stats` — Retrieve Packet statistics 
+- `GET /stats` — Retrieve Packet/DNS statistics 
 - `GET /dns` — Retrieve the current DNS cache 
 
 Those endpoints can easily be queried by adding some shell commands in `config.yaml`:
@@ -285,7 +285,7 @@ Note 2: see examples how to use webhooks for sensors and/or automation
 
 ## Author
 
-- Eric Kreuwels
+- Eric
   
 [add-repro-shield]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
 [app-store-shield]: https://my.home-assistant.io/badges/supervisor_store.svg

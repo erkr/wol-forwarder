@@ -2,18 +2,26 @@
 # Note: rest sensors spam the log with connection 
 #       errors if the app is not running 
 rest:
-  # Note: consider using template trigger sensors   
+  # Note: consider using template triggered sensors (reponsive, no connection errors)  
   - resource: http://localhost:58080/stats
     sensor:
-      - name: WOL Forwarder Stats
-        unique_id: wol_forwarder_stats
+      - name: WOL Forwarder Status
+        unique_id: wol_forwarder_status
         json_attributes_path: 'data'
         json_attributes:
           - packets
+          - dns
         availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
         value_template: |
-            {{ 'Ok' if value_json.data.running 
-               else 'Stopped' }}
+            {% if not value_json.data.running %}
+              App Stopped 
+            {% elif not value_json.data.dns.healthy %}
+              DNS Outdated
+            {% elif value_json.data.packets.failed > 0 %}
+              Failed packets
+            {% else %}
+              Ok
+            {% endif %}
       - name: WOL Forwarder Accepted
         # This counter resets every time the app restarts
         unique_id: wol_forwarder_accepted
@@ -24,20 +32,8 @@ rest:
         unique_id: wol_forwarder_rejected
         availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
         value_template: "{{ value_json.data.packets.rejected }}"
-  - resource: http://localhost:58080/dns
-    scan_interval: 60
-    sensor:
-      - name: WOL Forwarder DNS
-        unique_id: wol_forwarder_dns
-        json_attributes_path: 'data'
-        json_attributes:
-          - statistics
+      - name: WOL Forwarder Failed
+        # This counter resets every time the app restarts
+        unique_id: wol_forwarder_failed
         availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
-        value_template: |
-            {% if value_json.data.statistics.oldest > 600 %}
-              Outdated
-            {% elif value_json.data.running %}
-              Ok
-            {% else %}
-              Stopped 
-            {% endif %}
+        value_template: "{{ value_json.data.packets.failed }}"
