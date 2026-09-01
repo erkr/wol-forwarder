@@ -114,6 +114,7 @@ Optionally enable `http_api_expose` when testing your setup, and keep disabled i
 - `GET /health` — Quick health check (HTTP 200 if running, 503 if stopped)
 - `GET /stats` — Retrieve Packet/DNS statistics 
 - `GET /dns` — Retrieve the current DNS cache 
+- `POST /reset` - Reset specified counter(s): ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded', 'all']
 
 Those endpoints can easily be queried by adding some shell commands in `config.yaml`:
 ``` 
@@ -122,8 +123,10 @@ shell_command:
   wol_config: curl -s http://localhost:58080/config | jq "."
   wol_dns: curl -s http://localhost:58080/dns | jq "."
   wol_stats: curl -s http://localhost:58080/stats | jq "."
+  wol_reset_all: curl -i -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset
+
 ``` 
-These commands will add actions that can be used in the `Tools->actions` menu
+These commands will add actions that can be used manually in the `Tools->actions` menu, or by automations and scripts
 
 ### Config Response Example
 

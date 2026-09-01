@@ -7,6 +7,10 @@ from ha_webhook import send_ha_webhook
 # Configure logging (the main module configures root logging; keep this basic)
 logger = logging.getLogger(__name__)
 
+def is_list_of_strings(pins):
+   return (pins and isinstance(pins, list) and all(isinstance(pin, str) for pin in pins))
+
+
 
 class WoLPacketListener:
     """
@@ -240,6 +244,7 @@ class WoLPacketListener:
         except Exception:
             self.packets_failed += 1
             logger.exception("Failed to send magic packet to %s:%d", self.broadcast_ip, self.wol_port)
+            # deliberately no WebHook call here if this fails as that will fail most likelely as well.
         finally:
             try:
                 sock.close()
@@ -438,3 +443,27 @@ class WoLPacketListener:
         magic_packet = packet_data[:102]
         mac_address = mac_bytes.hex(':').upper()
         return { "valid": True, "magic_packet": magic_packet, "mac": mac_address }
+
+    def reset_counters(self, reset_list): 
+        # Validate Input is  a list of strings
+        if not is_list_of_strings(reset_list):
+           raise ValueError("Input is not a list of counters to reset")
+        # Validate the strings are known
+        counters_list = ['all', 'packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded']
+        if not set(reset_list).issubset(counters_list):
+           raise ValueError(f"Unknown items {set(reset_list) - set(counters_list)} in the list to reset")
+        
+        # Process the list
+        if set(['packets_accepted', 'all']).intersection(reset_list):
+            self.packets_accepted=0
+            logger.debug("'packets_accepted' reset")
+        if set(['packets_rejected', 'all']).intersection(reset_list):
+            self.packets_rejected=0
+            logger.debug("'packets_rejected' reset")
+        if set(['packets_failed', 'all']).intersection(reset_list):
+            self.packets_failed=0
+            logger.debug("'packets_failed' reset")
+        if set(['packets_forwarded', 'all']).intersection(reset_list):
+            self.packets_forwarded=0
+            logger.debug("'packets_forwarded' reset")
+        return

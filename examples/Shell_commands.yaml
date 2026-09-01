@@ -3,3 +3,5 @@ shell_command:
   wol_config: curl -s http://localhost:58080/config | jq "."
   wol_dns: curl -s http://localhost:58080/dns | jq "."
   wol_stats: curl -s http://localhost:58080/stats | jq "."
+# Reset counters: ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded', 'all']
+  wol_reset_all: curl -i -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset

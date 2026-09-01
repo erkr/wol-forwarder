@@ -22,17 +22,17 @@ rest:
             {% else %}
               Ok
             {% endif %}
-      - name: WOL Forwarder Accepted
+      - name: WoL Forwarder Accepted
         # This counter resets every time the app restarts
         unique_id: wol_forwarder_accepted
         availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
         value_template: "{{ value_json.data.packets.accepted }}"
-      - name: WOL Forwarder Rejected
+      - name: WoL Forwarder Rejected
         # This counter resets every time the app restarts
         unique_id: wol_forwarder_rejected
         availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
         value_template: "{{ value_json.data.packets.rejected }}"
-      - name: WOL Forwarder Failed
+      - name: WoL Forwarder Failed
         # This counter resets every time the app restarts
         unique_id: wol_forwarder_failed
         availability: "{{ value_json is defined and value_json.success is defined and value_json.success }}"
