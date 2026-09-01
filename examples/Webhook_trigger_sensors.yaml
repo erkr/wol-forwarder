@@ -50,7 +50,7 @@ template:
       event_types: "{{ ['forwarded', 'rejected', 'statistics'] }}"
       device_class: button
       attributes:
-        data: "{{ dict(trigger.json.items() | rejectattr('0', 'eq', 'event')) | to_json }}"
+        data: "{{ dict(trigger.json.items() | rejectattr('0', 'eq', 'event')) }}"
 
   # Second example provides a target specific event and counting sensor 
   # Note: one trigger block with the MAC address per target required: 
