@@ -123,10 +123,11 @@ shell_command:
   wol_config: curl -s http://localhost:58080/config | jq "."
   wol_dns: curl -s http://localhost:58080/dns | jq "."
   wol_stats: curl -s http://localhost:58080/stats | jq "."
-  wol_reset_all: curl -i -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset
-
+  wol_reset_all: 'curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset'
 ``` 
+
 These commands will add actions that can be used manually in the `Tools->actions` menu, or by automations and scripts
+Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
 
 ### Config Response Example
 
@@ -206,6 +207,7 @@ These commands will add actions that can be used manually in the `Tools->actions
   "success": true
 }
 ```
+Note: healthy is `true` as long the oldest successful DNS lookup is less then 2 times the `dns_ttl` (default 2x300 sec)
 
 ## Webhook (optionally)
 Wol Forwarder can post webhooks when a valid packet where forwared and/or rejected or issues occured.
