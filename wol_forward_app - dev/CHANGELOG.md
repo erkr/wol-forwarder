@@ -1,12 +1,17 @@
 # Changelog DEV version
 
-## v1.2.1 
+## v1.2.2b4 
 
 Improvements:
-- Version tag passed to image and logged while starting
-- Revised installation instructions in the readme using standard badges and redirects
-- Added oldest successfull lookup to DNS statistics
-- Added examples
+
+- Extended statistics with WoL packet `failed` count and a `DNS Healthy` flag
+- Added statistics to `forwarded` webhook payload (equal to `rejected` to facilitate webhook based template sensors)
+- Added a `statistics` Webhook (Posts when either started or issues occured)
+- Added a `reset` endpoint to clear the specified counters
 
 Breaking:
-- None
+- Changed content of the `stats` endpoint; 
+   - removed `received` packets counter 
+   - replaced `forwarded` counter by a `failed` counter 
+- Config option `webhook_sel` is removed. If a `webhook_id` is configured all events will be reported
+
