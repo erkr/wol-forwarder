@@ -466,4 +466,12 @@ class WoLPacketListener:
         if set(['packets_forwarded', 'all']).intersection(reset_list):
             self.packets_forwarded=0
             logger.debug("'packets_forwarded' reset")
+        
+        send_ha_webhook(self.webhook_id, {"event":"statistics", 
+                                          "message": f"Counters {reset_list} reset",
+                                          "rejected": self.packets_rejected, 
+                                          "accepted": self.packets_accepted, 
+                                          "failed": self.packets_failed,
+                                          "dns_healthy": self.dns_healthy})
+
         return

@@ -5,7 +5,7 @@
 Improvements:
 - Extended statistics with WoL packet `failed` count and a `DNS Healthy` flag
 - Added statistics to `forwarded` webhook payload (equal to `rejected` to facilitate webhook based template sensors)
-- Added a `statistics` Webhook (Posts when either started or issues occured)
+- Added a `statistics` Webhook (Posts when either started, counter cleared or DNS issues occured)
 - Added a `reset` endpoint to clear specified counters
 - Added more triggered template sensor examples
 
