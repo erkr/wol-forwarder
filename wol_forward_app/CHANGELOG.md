@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.2 
+## v1.3.0 
 
 Improvements:
 - Extended statistics with WoL packet `failed` count and a `DNS Healthy` flag
