@@ -3,12 +3,12 @@
 import logging
 from flask import Flask, jsonify, request
 from typing import TYPE_CHECKING
+from werkzeug.exceptions import BadRequest
 
 if TYPE_CHECKING:
     from wol_packet_listener import WoLPacketListener
 
 logger = logging.getLogger(__name__)
-
 
 def create_api_server(listener: "WoLPacketListener") -> Flask:
     """
@@ -77,6 +77,35 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
                 'success': False,
                 'error': str(e)
             }), 500
+            
+    @app.route('/reset', methods=['POST'])
+    def reset():
+        """Reset counters.
+           Expects a JSON list of counters to reset. 
+           Supported counters: ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded'] or ['all']
+           Example in Windows CMD:
+             curl -i -H "Content-Type: application/json" -X POST -d "[\"packets_failed\",\"packets_rejected\"]" http://localhost:58080/reset
+        """
+        try:
+            content = request.json
+            listener.reset_counters(content)
+            logger.info("Counters %s reset", content)
+            return jsonify({
+                    'success': True,
+                    'message': f'counters {content} cleared'
+                }), 200
+        except (ValueError, BadRequest) as e:
+            logger.error("Resetting counters: %s", e)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 400
+        except Exception as e:
+            logger.exception("Exception Resetting counters: %s", e)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
 
     @app.errorhandler(404)
     def not_found(error):
@@ -84,7 +113,7 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
         return jsonify({
             'success': False,
             'error': 'Endpoint not found',
-            'available_endpoints': ['/config', '/health', '/stats', '/dns']
+            'available_endpoints': ['/config', '/health', '/stats', '/dns', '/reset']
         }), 404
 
     @app.errorhandler(500)

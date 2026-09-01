@@ -1,6 +1,6 @@
 # Changelog DEV version
 
-## v1.2.2b4 
+## v1.3.0 
 
 Improvements:
 
@@ -15,3 +15,6 @@ Breaking:
    - replaced `forwarded` counter by a `failed` counter 
 - Config option `webhook_sel` is removed. If a `webhook_id` is configured all events will be reported
 
+Updates:
+- Updated container base image to python:3.14-slim
+- Updated library versions in requirements.txt

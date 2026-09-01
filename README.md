@@ -56,7 +56,6 @@ Configure options in the Supervisor add-on UI (or in `/data/options.json`):
     - `api_port`: HTTP port for the status API (default: 58080)
 - `webhook_id`: When defined, data for forwarded packets will be posted
     - `ha_api_url`: When specified, it overrules the internal url to post webhooks (example: http://homeassistant.local:8123/api). Can als be used to post to other desitinations, as long no autorisation is required
-    - `webhook_sel`: Options are `all`, `forward`, `reject` or `disable` (no reporting). Default is `forward`.
 
 ### Example default (minimum) config:
 ```
@@ -100,7 +99,6 @@ http_api_expose: false
 api_port: 59080
 webhook_id: -ExxxxxxxxxxxxxxxxHs
 ha_api_url: http://homeassistant:8123/api
-webhook_sel: all
 ```
 
 ## HTTP Status API
@@ -114,8 +112,9 @@ Optionally enable `http_api_expose` when testing your setup, and keep disabled i
 
 - `GET /config` — Retrieve the configuration passed to the app.
 - `GET /health` — Quick health check (HTTP 200 if running, 503 if stopped)
-- `GET /stats` — Retrieve Packet statistics 
+- `GET /stats` — Retrieve Packet/DNS statistics 
 - `GET /dns` — Retrieve the current DNS cache 
+- `POST /reset` - Reset specified counter(s): ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded', 'all']
 
 Those endpoints can easily be queried by adding some shell commands in `config.yaml`:
 ``` 
@@ -124,8 +123,11 @@ shell_command:
   wol_config: curl -s http://localhost:58080/config | jq "."
   wol_dns: curl -s http://localhost:58080/dns | jq "."
   wol_stats: curl -s http://localhost:58080/stats | jq "."
+  wol_reset_all: 'curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset'
 ``` 
-These commands will add actions that can be used in the `Tools->actions` menu
+
+These commands will add actions that can be used manually in the `Tools->actions` menu, or by automations and scripts
+Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
 
 ### Config Response Example
 
@@ -144,11 +146,7 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
     "mac_filtering": false,
     "http_api_expose": false,
-    "webhook_reporting": {
-      "ha_api_url": "",
-      "forwarded": true,
-      "rejected": false
-    }
+    "ha_api_url": "",
   }
 }
 ```
@@ -169,9 +167,14 @@ These commands will add actions that can be used in the `Tools->actions` menu
   "data": {
     "packets": {
       "accepted": 92,
-      "forwarded": 92,
-      "received": 101,
-      "rejected": 9
+      "rejected": 9,
+      "failed": 1,
+    },
+    "dns": {
+        "lookups": 4607,
+        "success": 4591,
+        "oldest": 0.0
+        "healthy": true,
     },
     "running": true
   },
@@ -197,19 +200,33 @@ These commands will add actions that can be used in the `Tools->actions` menu
     "statistics": {
         "lookups": 4607,
         "success": 4591,
-        "oldest": 0.0
+        "oldest": 0.0,
+        "healthy": true,
     }
   },
   "success": true
 }
 ```
+Note: healthy is `true` as long the oldest successful DNS lookup is less then 2 times the `dns_ttl` (default 2x300 sec)
 
 ## Webhook (optionally)
-Wol Forwarder can post a webhooks when a valid packet was forwared and/or rejected.
+Wol Forwarder can post webhooks when a valid packet where forwared and/or rejected or issues occured.
 This requirs at least `webhook_id` to be defined and optionally an alternative external url (`ha_api_url`).
-Use `webhook_sel` to select what is reported (default reports forwarded packets).
 Note: due a bug in HA, webhooks posted internally to Home Assistant (default when `ha_api_url` not defined) 
       only work when the webhook is defined with `local_only=false` (There will be no errors in the app log, as the call returns success!)
+
+WebHook 'statistics' posts contain this JSON payload data:
+```
+{
+   "event":"statistics", 
+   "message": "reason", 
+   "rejected": number,
+   "accepted": number,
+   "failed": number,
+   "dns_healthy": bool,
+}
+```
+
 WebHook 'forwarded' posts contain JSON payload data with additional soruce and target info:
 ```
 {
@@ -217,7 +234,11 @@ WebHook 'forwarded' posts contain JSON payload data with additional soruce and t
    "source_ip": source_ip, 
    "source_name": source_name, 
    "mac_address": mac_address, 
-   "mac_name": mac_name 
+   "mac_name": mac_name,
+   "rejected": number,
+   "accepted": number,
+   "failed": number,
+   "dns_healthy": bool,
 }
 ```
 WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
@@ -226,7 +247,9 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
    "event":"rejected", 
    "message": "reason", 
    "rejected": number,
-   "accepted": number
+   "accepted": number,
+   "failed": number,
+   "dns_healthy": bool,
 }
 ```
 
@@ -267,7 +290,7 @@ Note 2: see examples how to use webhooks for sensors and/or automation
 
 ## Author
 
-- Eric Kreuwels
+- Eric
   
 [add-repro-shield]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
 [app-store-shield]: https://my.home-assistant.io/badges/supervisor_store.svg
