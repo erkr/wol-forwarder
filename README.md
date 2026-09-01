@@ -127,6 +127,7 @@ shell_command:
 ``` 
 
 These commands will add actions that can be used manually in the `Tools->actions` menu, or by automations and scripts
+
 Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
 
 ### Config Response Example
