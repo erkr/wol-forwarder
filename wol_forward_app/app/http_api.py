@@ -82,7 +82,7 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
     def reset():
         """Reset counters.
            Expects a JSON list of counters to reset. 
-           Supported counters: ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded'] or ['all']
+           Supported counters: ['packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed'] or ['all']
            Example in Windows CMD:
              curl -i -H "Content-Type: application/json" -X POST -d "[\"packets_failed\",\"packets_rejected\"]" http://localhost:58080/reset
         """
@@ -95,7 +95,7 @@ def create_api_server(listener: "WoLPacketListener") -> Flask:
                     'message': f'counters {content} cleared'
                 }), 200
         except (ValueError, BadRequest) as e:
-            logger.error("Resetting counters: %s", e)
+            logger.error("Reset counters failed: %s", e)
             return jsonify({
                 'success': False,
                 'error': str(e)

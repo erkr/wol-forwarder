@@ -25,7 +25,7 @@ template:
       state_class: total_increasing
     # These template counters reflect the app counters (like the rest sensors, but update instantly)
     # So these counters reset after restarting the App
-    - name: WoL forwarded total
+    - name: WoL accepted total
       state: |
         {{ trigger.json.accepted 
            if trigger.json.accepted is defined 

@@ -114,7 +114,7 @@ Optionally enable `http_api_expose` when testing your setup, and keep disabled i
 - `GET /health` — Quick health check (HTTP 200 if running, 503 if stopped)
 - `GET /stats` — Retrieve Packet/DNS statistics 
 - `GET /dns` — Retrieve the current DNS cache 
-- `POST /reset` - Reset specified counter(s): ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded', 'all']
+- `POST /reset` - Reset specified counter(s): ['packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed', 'all']
 
 Those endpoints can easily be queried by adding some shell commands in `config.yaml`:
 ``` 
@@ -128,7 +128,8 @@ shell_command:
 
 These commands will add actions that can be used manually in the `Tools->actions` menu, or by automations and scripts
 
-Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
+Note - reset in Windows CMD:  
+`curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
 
 ### Config Response Example
 
@@ -173,7 +174,7 @@ Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X PO
     },
     "dns": {
         "lookups": 4607,
-        "success": 4591,
+        "failed": 2,
         "oldest": 0.0
         "healthy": true,
     },
@@ -200,7 +201,7 @@ Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X PO
     "running": true,
     "statistics": {
         "lookups": 4607,
-        "success": 4591,
+        "failed": 2,
         "oldest": 0.0,
         "healthy": true,
     }
@@ -224,6 +225,7 @@ WebHook 'statistics' posts contain this JSON payload data:
    "rejected": number,
    "accepted": number,
    "failed": number,
+	 "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -239,6 +241,7 @@ WebHook 'forwarded' posts contain JSON payload data with additional soruce and t
    "rejected": number,
    "accepted": number,
    "failed": number,
+	 "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -250,6 +253,7 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
    "rejected": number,
    "accepted": number,
    "failed": number,
+	 "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
