@@ -209,7 +209,10 @@ Note - reset in Windows CMD:
   "success": true
 }
 ```
-Note: healthy is `true` as long the oldest successful DNS lookup is less then 2 times the `dns_ttl` (default 2x300 sec)
+Note: DNS stays healthy, even when a DNS lookup fails (intermittent failures can be expected). 
+Failed lookups are retried every 30 seconds and healthy becomes `false` 
+once lookups fail structurally for twice the configured `dns_ttl` time (default 2x300 sec). 
+
 
 ## Webhook (optionally)
 Wol Forwarder can post webhooks when a valid packet where forwared and/or rejected or issues occured.

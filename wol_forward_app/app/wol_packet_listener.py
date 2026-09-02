@@ -454,11 +454,18 @@ class WoLPacketListener:
         # Validate Input is  a list of strings
         if not is_list_of_strings(reset_list):
            raise ValueError("Input is not a list of counters to reset")
-        # Validate the strings are known
-        counters_list = ['all', 'packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed']
+        # Validate the strings are valid
+        counters_list = ['tst', 'all', 'packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed']
         if not set(reset_list).issubset(counters_list):
            raise ValueError(f"Unknown items {set(reset_list) - set(counters_list)} in the list to reset")
         
+        if 'tst' in reset_list:
+            self.packets_accepted=666
+            self.packets_failed=13
+            self.packets_rejected=42
+            self.dns_failed=10
+            logger.info("Test values for reset counters applied")
+            
         # Process the list
         if set(['packets_accepted', 'all']).intersection(reset_list):
             self.packets_accepted=0
