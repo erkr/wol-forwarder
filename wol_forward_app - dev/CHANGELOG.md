@@ -1,6 +1,6 @@
 # Changelog DEV version
 
-## v1.3.0 
+## v1.3.1b1
 
 Improvements:
 

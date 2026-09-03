@@ -1,6 +1,6 @@
 {
   "name": "WoL Forwarder Dev",
-  "version": "1.3.0",
+  "version": "1.3.1b1",
   "slug": "wol_forward_app_dev",
   "description": "Wake-on-LAN (WoL) packets with  secureOn forwarding on your LAN.",
   "arch": ["aarch64", "amd64"],
@@ -25,6 +25,7 @@
   },
   "schema": {
     "wol_port": "int(1,65535)",
+    "wol_repeats": "int(1,5)?",
     "listen_port": "int(1024,65535)",
     "secure_on": "match(^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$)",
     "broadcast_ip": "match(^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$)",
