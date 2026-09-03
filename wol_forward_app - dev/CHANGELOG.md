@@ -1,6 +1,6 @@
 # Changelog DEV version
 
-## v1.3.1 
+## v1.3.1b1
 
 Improvements:
 - replaced `dns_success` by a resettable counter `dns_failed`
