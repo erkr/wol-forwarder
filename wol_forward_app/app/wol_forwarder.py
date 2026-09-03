@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 VERSION_TAG = os.environ.get('APP_IMAGE_TAG', 'unknown') # added to image by docker build
 # Defaults (can be overridden by env vars set by run.sh)
 WOL_PORT = int(os.environ.get('WOL_PORT', 9))
+WOL_REPEATS = int(os.environ.get('WOL_REPEATS', 2))
 BROADCAST_IP = os.environ.get('BROADCAST_IP', '255.255.255.255')
 LISTEN_PORT = int(os.environ.get('LISTEN_PORT', 58090))
 SECURE_ON = os.environ.get('SECURE_ON', 'a1:b2:c3:d4:e5:f6')
@@ -62,16 +63,19 @@ def validate_settings():
 
     # validate integer values
     if not 1 <= WOL_PORT <= 65535:
-        logger.error("WOL_PORT invalid value %s range:1 - 65535", WOL_PORT)
+        logger.error("WOL_PORT invalid value %s range: 1-65535", WOL_PORT)
+        return False
+    if not 1 <= WOL_REPEATS <= 5:
+        logger.error("WOL_REPEATS invalid value %s range: 1-5", WOL_REPEATS)
         return False
     if not 1024 <= LISTEN_PORT <= 65535:
-        logger.error("LISTEN_PORT invalid value %s range:1024 - 65535", LISTEN_PORT)
+        logger.error("LISTEN_PORT invalid value %s range: 1024-65535", LISTEN_PORT)
         return False
     if not 1024 <= API_PORT <= 65535:
-        logger.error("API_PORT invalid value %s range:1024 - 65535", API_PORT)
+        logger.error("API_PORT invalid value %s range: 1024-65535", API_PORT)
         return False
     if not 60 <= DNS_TTL <= 3600:
-        logger.error("DNS_TTL invalid value %s range:60 - 3600", DNS_TTL)
+        logger.error("DNS_TTL invalid value %s range: 60-3600", DNS_TTL)
         return False
     
     # validate known Host list
@@ -147,6 +151,7 @@ def main():
         listen_port=LISTEN_PORT,
         listen_address="0.0.0.0",
         wol_port=WOL_PORT,
+        wol_repeats = WOL_REPEATS,
         broadcast_ip=BROADCAST_IP,
         secure_on_password=secure_on_password,
         mac_list= json.loads(MAC_LIST),

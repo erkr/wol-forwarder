@@ -4,6 +4,7 @@
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/release/erkr/wol-forwarder)](https://github.com/erkr/wol-forwarder/releases)
 [![License][license-shield]](./wol_forward_app/LICENSE)
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
+[nr-installs]
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
 
@@ -77,6 +78,7 @@ webhook_id: ''
 ```
 log_level: warning
 wol_port: 9
+wol_repeats: 4
 listen_port: 59990
 secure_on: a1:b2:c3:d4:e5:f6
 broadcast_ip: 255.255.255.255
@@ -142,6 +144,7 @@ Note - reset in Windows CMD:
     "listen_address": "0.0.0.0",
     "listen_port": 58090,
     "wol_port": 9,
+    "wol_repeats": 2,
     "broadcast_ip": "255.255.255.255",
     "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
     "host_filtering": true,
@@ -305,4 +308,4 @@ Note 2: see examples how to use webhooks for sensors and/or automation
 [license-shield]: https://img.shields.io/badge/license-MIT-green.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-
+[nr-installs]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fanalytics.home-assistant.io%2Faddons.json&query=%24.ab353c6f_wol_forward_app.total&label=Wol-Forwarder%20Installations&link=https%3A%2F%2Faddonstats.poeschl.xyz%2F%23

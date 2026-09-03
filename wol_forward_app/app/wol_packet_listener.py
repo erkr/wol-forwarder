@@ -21,6 +21,7 @@ class WoLPacketListener:
     def __init__(
         self,
         listen_port: int = 58090,
+        wol_repeats: int = 1,
         listen_address: str = "0.0.0.0",
         wol_port: int = 9,
         broadcast_ip: str = "255.255.255.255",
@@ -52,6 +53,7 @@ class WoLPacketListener:
             webhook_id: optional web_hook id to post reports to 
         """
         self.listen_port = listen_port
+        self.wol_repeats = wol_repeats
         self.listen_address = listen_address
         self.wol_port = wol_port
         self.broadcast_ip = broadcast_ip
@@ -244,7 +246,8 @@ class WoLPacketListener:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(magic_packet, (self.broadcast_ip, self.wol_port))
+            for _ in range(self.wol_repeats):
+                sock.sendto(magic_packet, (self.broadcast_ip, self.wol_port))
             logger.debug("Sent magic packet (%d bytes) to %s:%d", len(magic_packet), self.broadcast_ip, self.wol_port)
         except Exception:
             self.packets_failed += 1
@@ -360,6 +363,7 @@ class WoLPacketListener:
             'listen_address': self.listen_address,
             'listen_port': self.listen_port,
             'wol_port': self.wol_port,
+            'wol_repeats': self.wol_repeats,
             'broadcast_ip': self.broadcast_ip,
             'known_hosts': self.known_hosts,
             'host_filtering': self.host_filtering,
@@ -454,16 +458,17 @@ class WoLPacketListener:
         # Validate Input is  a list of strings
         if not is_list_of_strings(reset_list):
            raise ValueError("Input is not a list of counters to reset")
-        # Validate the strings are valid
+        # Validate the strings are valid (tst is for testing with know start values)
         counters_list = ['tst', 'all', 'packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed']
         if not set(reset_list).issubset(counters_list):
            raise ValueError(f"Unknown items {set(reset_list) - set(counters_list)} in the list to reset")
         
         if 'tst' in reset_list:
-            self.packets_accepted=666
+            self.packets_accepted=60
             self.packets_failed=13
             self.packets_rejected=42
             self.dns_failed=10
+            self.dns_healthy=False
             logger.info("Test values for reset counters applied")
             
         # Process the list
