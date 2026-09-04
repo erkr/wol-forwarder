@@ -4,6 +4,10 @@ configuration:
     name: WOL Port
     description: >-
       UDP port to send magic packets to on the LAN (default: 9, range: 1-65535).
+  wol_repeats: 
+    name: WOL Repeats
+    description: >-
+      Number of times to forward a valid magic packets to on the LAN (default: 2, range: 1-5).
   listen_port:
     name: Listen Port
     description: >-

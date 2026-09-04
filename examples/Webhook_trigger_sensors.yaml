@@ -12,45 +12,89 @@ template:
          and trigger.json.event is defined 
       }}
     sensor:
-    # These template counters won't reset after restarting the App
-    - name: WoL forwarded total increasing
+    - name: WoL packets accepted total 
       state: |
         {% set current = this.state | int(0) %}
-        {{ current+1 if trigger.json.event=='forwarded' else current }}
+        {% set new_cnt = trigger.json.accepted if trigger.json.accepted is defined else 0 %}
+        {% set old_cnt = this.attributes.last_cnt | default(0) %}
+        {% set delta = new_cnt if new_cnt<old_cnt else new_cnt-old_cnt %}
+        {{ current + delta }}
       state_class: total_increasing
-    - name: WoL rejected total increasing
+      attributes:
+         last_cnt: "{{ trigger.json.accepted if trigger.json.accepted is defined else this.attributes.last_cnt | default(0) }}"
+    - name: WoL packets rejected total 
       state: |
         {% set current = this.state | int(0) %}
-        {{ current+1 if trigger.json.event=='rejected' else current }}
+        {% set new_cnt = trigger.json.rejected if trigger.json.rejected is defined else 0 %}
+        {% set old_cnt = this.attributes.last_cnt | default(0) %}
+        {% set delta = new_cnt if new_cnt<old_cnt else new_cnt-old_cnt %}
+        {{ current + delta }}
       state_class: total_increasing
-    # These template counters reflect the app counters (like the rest sensors, but update instantly)
-    # So these counters reset after restarting the App
-    - name: WoL forwarded total
+      attributes:
+         last_cnt: "{{ trigger.json.rejected if trigger.json.rejected is defined else this.attributes.last_cnt | default(0) }}"
+    - name: WoL packets failed total 
+      state: |
+        {% set current = this.state | int(0) %}
+        {% set new_cnt = trigger.json.failed if trigger.json.failed is defined else 0 %}
+        {% set old_cnt = this.attributes.last_cnt | default(0) %}
+        {% set delta = new_cnt if new_cnt<old_cnt else new_cnt-old_cnt %}
+        {{ current + delta }}
+      state_class: total_increasing
+      attributes:
+         last_cnt: "{{ trigger.json.failed if trigger.json.failed is defined else this.attributes.last_cnt | default(0) }}"
+    # DNS sensors only for WOL forwarder v1.3.1+
+    - name: WoL DNS failed total 
+      state: |
+        {% set current = this.state | int(0) %}
+        {% set new_cnt = trigger.json.dns_failed if trigger.json.dns_failed is defined else 0 %}
+        {% set old_cnt = this.attributes.last_cnt | default(0) %}
+        {% set delta = new_cnt if new_cnt<old_cnt else new_cnt-old_cnt %}
+        {{ current + delta }}
+      state_class: total_increasing
+      attributes:
+         last_cnt: "{{ trigger.json.dns_failed if trigger.json.dns_failed is defined else this.attributes.last_cnt | default(0) }}"
+    # These template counters reflect the app counters (like the rest sensors, but instantly)
+    # The counters reset after restarting the App
+    - name: WoL packets accepted actual
       state: |
         {{ trigger.json.accepted 
            if trigger.json.accepted is defined 
            else this.state|int(0) }}
       state_class: total
-    - name: WoL rejected total
+    - name: WoL packets rejected actual
       state: |
         {{ trigger.json.rejected 
            if trigger.json.rejected is defined 
            else this.state|int(0)}}
       state_class: total
-    - name: WoL failed total
+    - name: WoL packets failed actual
       state: |
         {{ trigger.json.failed 
            if trigger.json.failed is defined 
            else this.state|int(0)}}
       state_class: total
-    # Generic recording of accepted and rejected WOL events
+    # DNS sensors only for WOL forwarder v1.3.1+
+    - name: WoL DNS failed actual
+      state: |
+        {{ trigger.json.dns_failed 
+           if trigger.json.dns_failed is defined 
+           else this.state|int(0)}}
+      state_class: total
+    binary_sensor:
+    - name: WoL DNS Health 
+      state: |
+        {{ trigger.json.dns_healthy != true
+           if trigger.json.dns_healthy is defined 
+           else this.state|bool(false)}}
+      device_class: problem
     event:
     - name: WoL event
       event_type: "{{ trigger.json.event }}"
       event_types: "{{ ['forwarded', 'rejected', 'statistics'] }}"
       device_class: button
-      attributes:
-        data: "{{ dict(trigger.json.items() | rejectattr('0', 'eq', 'event')) }}"
+      attributes: 
+         data: |
+           {{ dict(trigger.json.items() | rejectattr('0','in', ['event','mac_address','source_ip'])) }}
 
   # Second example provides a target specific event and counting sensor 
   # Note: one trigger block with the MAC address per target required: 

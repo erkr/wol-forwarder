@@ -21,6 +21,7 @@ class WoLPacketListener:
     def __init__(
         self,
         listen_port: int = 58090,
+        wol_repeats: int = 1,
         listen_address: str = "0.0.0.0",
         wol_port: int = 9,
         broadcast_ip: str = "255.255.255.255",
@@ -52,6 +53,7 @@ class WoLPacketListener:
             webhook_id: optional web_hook id to post reports to 
         """
         self.listen_port = listen_port
+        self.wol_repeats = wol_repeats
         self.listen_address = listen_address
         self.wol_port = wol_port
         self.broadcast_ip = broadcast_ip
@@ -84,7 +86,7 @@ class WoLPacketListener:
         self.packets_failed = 0
         # DNS lookups
         self.dns_lookups = 0
-        self.dns_success = 0
+        self.dns_failed = 0
         self.dns_age = 0.0 # age of oldest successful DNS lookup
         self.dns_healthy = True  # becomes false if age exceeds dns_ttl twice 
 
@@ -140,6 +142,7 @@ class WoLPacketListener:
                                               "rejected": self.packets_rejected, 
                                               "accepted": self.packets_accepted, 
                                               "failed": self.packets_failed,
+                                              "dns_failed": self.dns_failed,
                                               "dns_healthy": self.dns_healthy})
             while self.running:
                 try:
@@ -182,6 +185,7 @@ class WoLPacketListener:
                                               "rejected": self.packets_rejected, 
                                               "accepted": self.packets_accepted, 
                                               "failed": self.packets_failed,
+                                              "dns_failed": self.dns_failed,
                                               "dns_healthy": self.dns_healthy})
             return
         source_name=result.get("name", source_ip)
@@ -197,6 +201,7 @@ class WoLPacketListener:
                                               "rejected": self.packets_rejected, 
                                               "accepted": self.packets_accepted, 
                                               "failed": self.packets_failed,
+                                              "dns_failed": self.dns_failed,
                                               "dns_healthy": self.dns_healthy})
             return
         mac_address = result.get('mac','Unknown')
@@ -218,6 +223,7 @@ class WoLPacketListener:
                                                   "rejected": self.packets_rejected, 
                                                   "accepted": self.packets_accepted, 
                                                   "failed": self.packets_failed,
+                                                  "dns_failed": self.dns_failed,
                                                   "dns_healthy": self.dns_healthy})
                 return
             
@@ -230,6 +236,7 @@ class WoLPacketListener:
                                           "rejected": self.packets_rejected, 
                                           "accepted": self.packets_accepted, 
                                           "failed": self.packets_failed,
+                                          "dns_failed": self.dns_failed,
                                           "dns_healthy": self.dns_healthy})
         # Forward the packet without SecureOn suffix 
         self.send_magic_packet(result["magic_packet"])
@@ -239,7 +246,8 @@ class WoLPacketListener:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(magic_packet, (self.broadcast_ip, self.wol_port))
+            for _ in range(self.wol_repeats):
+                sock.sendto(magic_packet, (self.broadcast_ip, self.wol_port))
             logger.debug("Sent magic packet (%d bytes) to %s:%d", len(magic_packet), self.broadcast_ip, self.wol_port)
         except Exception:
             self.packets_failed += 1
@@ -293,9 +301,9 @@ class WoLPacketListener:
                         entry['name'] = name
                         entry['last_success'] = now
                         logger.debug("Resolved %s -> %s (%s)", host, ips, name)
-                        self.dns_success += 1
                     else:
                         # resolution returned empty set; keep previous ips if any
+                        self.dns_failed += 1
                         if entry['ips']:
                             logger.warning("DNS refresh for %s returned empty; keeping previous IPs %s", host, entry['ips'])
                         else:
@@ -315,17 +323,18 @@ class WoLPacketListener:
         if (self.dns_healthy != healthy): # only register changes in health
             self.dns_healthy = healthy  
             if ( not healthy ):
-                logger.error("DNS outdated: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)
+                logger.error("DNS outdated: oldest %1.1f sec, #lookups: %d, #failed %d", self.dns_age, self.dns_lookups, self.dns_failed)
             else:
-                logger.info("DNS refreshed: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)          
+                logger.info("DNS refreshed: oldest %1.1f sec, #lookups: %d, #failed %d", self.dns_age, self.dns_lookups, self.dns_failed)          
             send_ha_webhook(self.webhook_id, {"event":"statistics", 
                                               "message": "DNS Health changed",
                                               "rejected": self.packets_rejected, 
                                               "accepted": self.packets_accepted, 
                                               "failed": self.packets_failed,
+                                              "dns_failed": self.dns_failed,
                                               "dns_healthy": self.dns_healthy})
         elif ( self.dns_lookups > nr_lookups):
-            logger.debug("DNS refresh Stats: oldest %1.1f sec, #lookups: %d, #success %d", self.dns_age, self.dns_lookups, self.dns_success)
+            logger.debug("DNS refresh Stats: oldest %1.1f sec, #lookups: %d, #failed %d", self.dns_age, self.dns_lookups, self.dns_failed)
          
     def _check_known_hosts(self, source_ip: str) -> Dict:
         # allow all when no known_hosts configured
@@ -354,6 +363,7 @@ class WoLPacketListener:
             'listen_address': self.listen_address,
             'listen_port': self.listen_port,
             'wol_port': self.wol_port,
+            'wol_repeats': self.wol_repeats,
             'broadcast_ip': self.broadcast_ip,
             'known_hosts': self.known_hosts,
             'host_filtering': self.host_filtering,
@@ -374,7 +384,7 @@ class WoLPacketListener:
             },
             'dns': {
                 'lookups': self.dns_lookups,
-                'success': self.dns_success,
+                'failed': self.dns_failed,
                 'oldest': round(self.dns_age,1),
                 'healthy': self.dns_healthy,
            },
@@ -396,7 +406,7 @@ class WoLPacketListener:
             },
             'statistics': {
                 'lookups': self.dns_lookups,
-                'success': self.dns_success,
+                'failed': self.dns_failed,
                 'oldest': round(self.dns_age,1),
                 'healthy': self.dns_healthy,
            },
@@ -448,11 +458,19 @@ class WoLPacketListener:
         # Validate Input is  a list of strings
         if not is_list_of_strings(reset_list):
            raise ValueError("Input is not a list of counters to reset")
-        # Validate the strings are known
-        counters_list = ['all', 'packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded']
+        # Validate the strings are valid (tst is for testing with know start values)
+        counters_list = ['tst', 'all', 'packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed']
         if not set(reset_list).issubset(counters_list):
            raise ValueError(f"Unknown items {set(reset_list) - set(counters_list)} in the list to reset")
         
+        # only for testing:
+        if 'tst' in reset_list:
+            self.packets_accepted=31
+            self.packets_rejected=21
+            self.packets_failed=11
+            self.dns_failed=10
+            logger.warning("Test values for reset counters applied")
+            
         # Process the list
         if set(['packets_accepted', 'all']).intersection(reset_list):
             self.packets_accepted=0
@@ -463,15 +481,16 @@ class WoLPacketListener:
         if set(['packets_failed', 'all']).intersection(reset_list):
             self.packets_failed=0
             logger.debug("'packets_failed' reset")
-        if set(['packets_forwarded', 'all']).intersection(reset_list):
-            self.packets_forwarded=0
-            logger.debug("'packets_forwarded' reset")
+        if set(['dns_failed', 'all']).intersection(reset_list):
+            self.dns_failed=0
+            logger.debug("'dns_failed' reset")
         
         send_ha_webhook(self.webhook_id, {"event":"statistics", 
                                           "message": f"Counters {reset_list} reset",
                                           "rejected": self.packets_rejected, 
                                           "accepted": self.packets_accepted, 
                                           "failed": self.packets_failed,
+                                          "dns_failed": self.dns_failed,
                                           "dns_healthy": self.dns_healthy})
 
         return

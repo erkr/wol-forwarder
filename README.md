@@ -2,8 +2,10 @@
 
 # Forward Wake-on-LAN packets on your LAN (App/Add-on)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/release/erkr/wol-forwarder)](https://github.com/erkr/wol-forwarder/releases)
+[![Python](https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![License][license-shield]](./wol_forward_app/LICENSE)
-![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield] ![Supports armv7 Architecture][armv7-shield]
+
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
 
@@ -77,6 +79,7 @@ webhook_id: ''
 ```
 log_level: warning
 wol_port: 9
+wol_repeats: 4
 listen_port: 59990
 secure_on: a1:b2:c3:d4:e5:f6
 broadcast_ip: 255.255.255.255
@@ -114,7 +117,7 @@ Optionally enable `http_api_expose` when testing your setup, and keep disabled i
 - `GET /health` — Quick health check (HTTP 200 if running, 503 if stopped)
 - `GET /stats` — Retrieve Packet/DNS statistics 
 - `GET /dns` — Retrieve the current DNS cache 
-- `POST /reset` - Reset specified counter(s): ['packets_accepted', 'packets_rejected', 'packets_failed', 'packets_forwarded', 'all']
+- `POST /reset` - Reset specified counter(s): ['packets_accepted', 'packets_rejected', 'packets_failed', 'dns_failed', 'all']
 
 Those endpoints can easily be queried by adding some shell commands in `config.yaml`:
 ``` 
@@ -128,7 +131,8 @@ shell_command:
 
 These commands will add actions that can be used manually in the `Tools->actions` menu, or by automations and scripts
 
-Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
+Note - reset in Windows CMD:  
+`curl -s -H "Content-Type: application/json" -X POST -d "[\"all\"]" http://localhost:58080/reset`
 
 ### Config Response Example
 
@@ -141,10 +145,14 @@ Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X PO
     "listen_address": "0.0.0.0",
     "listen_port": 58090,
     "wol_port": 9,
+    "wol_repeats": 2,
     "broadcast_ip": "255.255.255.255",
-    "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
+    "known_hosts": [{"host":"my.ddns.net", "name": "Utah"},
+                    {"host":"192.168.178.19", "name": "iPhone Dad"},
+                    {"host":"192.168.178.16", "name": "iPhone Mom"}],
     "host_filtering": true,
-    "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
+    "mac_list": [{"mac":"1A:2B:3C:4D:5E:6F", "name": "MediaTower"},
+                 {"mac":"ec:43:f6:aa:78:6a", "name": "My NAS"}],
     "mac_filtering": false,
     "http_api_expose": false,
     "ha_api_url": "",
@@ -173,7 +181,7 @@ Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X PO
     },
     "dns": {
         "lookups": 4607,
-        "success": 4591,
+        "failed": 2,
         "oldest": 0.0
         "healthy": true,
     },
@@ -200,7 +208,7 @@ Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X PO
     "running": true,
     "statistics": {
         "lookups": 4607,
-        "success": 4591,
+        "failed": 2,
         "oldest": 0.0,
         "healthy": true,
     }
@@ -208,7 +216,10 @@ Note - reset in Windows CMD:  `curl -s -H "Content-Type: application/json" -X PO
   "success": true
 }
 ```
-Note: healthy is `true` as long the oldest successful DNS lookup is less then 2 times the `dns_ttl` (default 2x300 sec)
+Note: DNS stays healthy, even when a DNS lookup fails (intermittent failures can be expected). 
+Failed lookups are retried every 30 seconds and healthy becomes `false` 
+once lookups fail structurally for twice the configured `dns_ttl` time (default 2x300 sec). 
+
 
 ## Webhook (optionally)
 Wol Forwarder can post webhooks when a valid packet where forwared and/or rejected or issues occured.
@@ -224,6 +235,7 @@ WebHook 'statistics' posts contain this JSON payload data:
    "rejected": number,
    "accepted": number,
    "failed": number,
+   "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -239,6 +251,7 @@ WebHook 'forwarded' posts contain JSON payload data with additional soruce and t
    "rejected": number,
    "accepted": number,
    "failed": number,
+   "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -250,6 +263,7 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
    "rejected": number,
    "accepted": number,
    "failed": number,
+   "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -298,4 +312,5 @@ Note 2: see examples how to use webhooks for sensors and/or automation
 [license-shield]: https://img.shields.io/badge/license-MIT-green.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-
+[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
+[nr-installs]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fanalytics.home-assistant.io%2Faddons.json&query=%24.ab353c6f_wol_forward_app.total&label=Wol-Forwarder%20Installations&link=https%3A%2F%2Faddonstats.poeschl.xyz%2F%23

@@ -1,20 +1,16 @@
 # Changelog DEV version
 
-## v1.3.1b1
+## v1.3.1
 
 Improvements:
-
-- Extended statistics with WoL packet `failed` count and a `DNS Healthy` flag
-- Added statistics to `forwarded` webhook payload (equal to `rejected` to facilitate webhook based template sensors)
-- Added a `statistics` Webhook (Posts when either started or issues occured)
-- Added a `reset` endpoint to clear the specified counters
+- replaced `dns_success` by a resettable counter `dns_failed`
+- replaced reset option `packets_forwarded` (doing nothing) by reset `dns_failed` (new)
+- made option `wol_port` optional (default 9 is normally correct)
+- added (optional) `wol_repeats` config option (default 2, range 1-5)
+- Update Examples triggered template sensors:
+  - added DNS sensors (only for v1.3.1+)
+  - improved the `total_increasing` sensors (count correctly for a missed webhook events)
 
 Breaking:
-- Changed content of the `stats` endpoint; 
-   - removed `received` packets counter 
-   - replaced `forwarded` counter by a `failed` counter 
-- Config option `webhook_sel` is removed. If a `webhook_id` is configured all events will be reported
 
 Updates:
-- Updated container base image to python:3.14-slim
-- Updated library versions in requirements.txt
