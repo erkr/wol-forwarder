@@ -463,13 +463,13 @@ class WoLPacketListener:
         if not set(reset_list).issubset(counters_list):
            raise ValueError(f"Unknown items {set(reset_list) - set(counters_list)} in the list to reset")
         
+        # only for testing:
         if 'tst' in reset_list:
-            self.packets_accepted=60
-            self.packets_failed=13
-            self.packets_rejected=42
+            self.packets_accepted=31
+            self.packets_rejected=21
+            self.packets_failed=11
             self.dns_failed=10
-            self.dns_healthy=False
-            logger.info("Test values for reset counters applied")
+            logger.warning("Test values for reset counters applied")
             
         # Process the list
         if set(['packets_accepted', 'all']).intersection(reset_list):

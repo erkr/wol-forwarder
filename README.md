@@ -2,9 +2,9 @@
 
 # Forward Wake-on-LAN packets on your LAN (App/Add-on)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/release/erkr/wol-forwarder)](https://github.com/erkr/wol-forwarder/releases)
+[![Python](https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![License][license-shield]](./wol_forward_app/LICENSE)
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
-[![Python](https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
 
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
@@ -147,9 +147,12 @@ Note - reset in Windows CMD:
     "wol_port": 9,
     "wol_repeats": 2,
     "broadcast_ip": "255.255.255.255",
-    "known_hosts": [{"host":"sender.example.com", "name": "friendly name"}],
+    "known_hosts": [{"host":"my.ddns.net", "name": "Utah"},
+                    {"host":"192.168.178.19", "name": "iPhone Dad"},
+                    {"host":"192.168.178.16", "name": "iPhone Mom"}],
     "host_filtering": true,
-    "mac_list": [{"mac":"EC:43:F6:AA:78:6A", "name": "my NAS"}],
+    "mac_list": [{"mac":"1A:2B:3C:4D:5E:6F", "name": "MediaTower"},
+                 {"mac":"ec:43:f6:aa:78:6a", "name": "My NAS"}],
     "mac_filtering": false,
     "http_api_expose": false,
     "ha_api_url": "",
@@ -232,7 +235,7 @@ WebHook 'statistics' posts contain this JSON payload data:
    "rejected": number,
    "accepted": number,
    "failed": number,
-	 "dns_failed": number,
+   "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -248,7 +251,7 @@ WebHook 'forwarded' posts contain JSON payload data with additional soruce and t
    "rejected": number,
    "accepted": number,
    "failed": number,
-	 "dns_failed": number,
+   "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
@@ -260,7 +263,7 @@ WebHook 'rejected' posts contain JSON payload data with the reason of rejection:
    "rejected": number,
    "accepted": number,
    "failed": number,
-	 "dns_failed": number,
+   "dns_failed": number,
    "dns_healthy": bool,
 }
 ```
