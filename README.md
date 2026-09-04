@@ -4,7 +4,7 @@
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/release/erkr/wol-forwarder)](https://github.com/erkr/wol-forwarder/releases)
 [![License][license-shield]](./wol_forward_app/LICENSE)
 ![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
-[![Python](https://img.shields.io/badge/python-3.14-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
 
 
 This App (add-on) for Home Assistant provides a small daemon to forward Wake-on-LAN (WoL) magic packets on your LAN. Forwarding is protected by SecureOn, with optionally Host (source) and MAC (target) filtering.
